@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raio-X AFL — Jornada do Usuário & Catálogo</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --line:#e8eaef; --line2:#eef0f4;
+    --ink:#1a1f2e; --muted:#5b6477; --faint:#8b93a4;
+    --accent:#3b5bdb; --accent-soft:#eef1fd;
+    --hi:#e0464c; --mid:#cc7a12; --ok:#2c9a62;
+    --hi-bg:#fdecec; --mid-bg:#fbf3e3; --ok-bg:#e8f6ee;
+    --shadow:0 1px 2px rgba(16,24,40,.04),0 2px 6px rgba(16,24,40,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1240px;margin:0 auto;padding:34px 24px 90px}
+  header h1{margin:0 0 6px;font-size:30px;letter-spacing:-.5px;font-weight:700}
+  header .lead{margin:0;color:var(--muted);font-size:16px;max-width:800px}
+  .meta{color:var(--faint);font-size:13px;margin-top:10px}
+
+  .nav{display:flex;gap:8px;margin:24px 0 6px;flex-wrap:wrap}
+  .navbtn{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:10px 18px;border-radius:11px;cursor:pointer;font-size:14.5px;font-weight:600;box-shadow:var(--shadow)}
+  .navbtn:hover{color:var(--ink)} .navbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .view{display:none} .view.on{display:block}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0 4px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+  .kpi .n{font-size:28px;font-weight:700;letter-spacing:-.5px}.kpi .l{color:var(--muted);font-size:13px;margin-top:2px}
+  .kpi.hi .n{color:var(--hi)}.kpi.ac .n{color:var(--accent)}.kpi.ok .n{color:var(--ok)}
+
+  .stage{margin-top:32px;position:relative;padding-left:56px}
+  .stage::before{content:attr(data-n);position:absolute;left:0;top:0;width:40px;height:40px;border-radius:12px;background:var(--accent);color:#fff;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+  .stage.tx::before{background:var(--ink);content:"⚙"}
+  .stage::after{content:"";position:absolute;left:19px;top:48px;bottom:-32px;width:2px;background:linear-gradient(var(--line),transparent)}
+  .stage:last-child::after{display:none}
+  .stage h2{margin:0;font-size:22px;font-weight:700;letter-spacing:-.3px}
+  .stage .ssub{color:var(--muted);margin:3px 0 0;font-size:14.5px}
+  .stage .subs{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .subs .s{font-size:12px;background:var(--accent-soft);color:var(--accent);padding:3px 10px;border-radius:999px;font-weight:600}
+  .stage .note{background:#fffdf6;border:1px solid #f1e7c9;border-radius:11px;padding:12px 14px;margin:13px 0 0;font-size:13.5px;color:#7a6a3a}
+  .stage .note b{color:#5e5020}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(370px,1fr));gap:16px;margin-top:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--faint);font-weight:600}
+  .tags{display:flex;gap:6px;align-items:center}
+  .sevtag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px}
+  .sevtag::before{content:"";width:7px;height:7px;border-radius:50%}
+  .sevtag.alto{background:var(--hi-bg);color:var(--hi)}.sevtag.alto::before{background:var(--hi)}
+  .sevtag.medio{background:var(--mid-bg);color:var(--mid)}.sevtag.medio::before{background:var(--mid)}
+  .sevtag.baixo{background:var(--line2);color:var(--muted)}.sevtag.baixo::before{background:var(--faint)}
+  .sevtag.ok{background:var(--ok-bg);color:var(--ok)}.sevtag.ok::before{background:var(--ok)}
+  .depth{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.4px}
+  .depth.aud{background:var(--ok-bg);color:var(--ok)} .depth.parc{background:var(--mid-bg);color:var(--mid)} .depth.todo{background:var(--line2);color:var(--faint)}
+  h3.title{margin:0;font-size:18px;font-weight:700;letter-spacing:-.2px}
+  .headline{font-size:15px;font-weight:600;margin:-2px 0 0}.plain{font-size:13.8px;color:var(--muted);margin:0}
+  .impacts{display:flex;flex-wrap:wrap;gap:6px}
+  .imp{font-size:12px;padding:4px 10px;border-radius:8px;background:var(--line2);color:var(--muted);font-weight:500}
+  .imp.exp{background:#eef4ff;color:#3257c5}.imp.cus{background:#fdf3e6;color:#b3730d}.imp.seg{background:#fdecec;color:#c4393f}.imp.con{background:#f1ecfb;color:#7a4fc0}.imp.est{background:#e9f3ee;color:#2c8a59}
+  .techbtn{align-self:flex-start;background:none;border:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;padding:4px 0;display:flex;gap:5px;align-items:center}
+  .techbtn .arw{transition:.2s}.card.open .techbtn .arw{transform:rotate(90deg)}
+  .tech{display:none;border-top:1px solid var(--line2);padding-top:13px;flex-direction:column;gap:12px}.card.open .tech{display:flex}
+  .sec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--faint);margin:0 0 -3px;font-weight:600}
+  .archline{font-size:12.5px;color:var(--muted);background:#fafbfc;border:1px solid var(--line2);border-radius:9px;padding:9px 11px}.archline b{color:var(--ink)}
+  .bars{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+  .bar{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}.bar .track{flex:1;height:6px;background:#edeff3;border-radius:4px;overflow:hidden}.bar .fill{height:100%;border-radius:4px}
+  ul.li{margin:0;padding-left:17px}ul.li li{margin:3px 0;font-size:13.5px}ul.li.dim li{color:var(--muted)}
+  .rl{display:flex;flex-direction:column;gap:6px}.ri{display:flex;gap:8px;font-size:13px;align-items:flex-start}
+  .dot{font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;margin-top:1px;white-space:nowrap}
+  .dot.alto{background:var(--hi-bg);color:var(--hi)}
+  .sevtag.critico{background:#fbd5d5;color:#8a1119}.sevtag.critico::before{background:#8a1119}
+  .dot.critico{background:#fbd5d5;color:#8a1119}
+  .pprio.P0{}.dot.medio{background:var(--mid-bg);color:var(--mid)}.dot.baixo{background:var(--line2);color:var(--muted)}
+  .dot.P0{background:var(--hi-bg);color:var(--hi)}.dot.P1{background:var(--mid-bg);color:var(--mid)}.dot.P2{background:var(--line2);color:var(--muted)}.dot.Estrutural{background:var(--accent-soft);color:var(--accent)}
+  .p0s{display:flex;flex-wrap:wrap;gap:6px}.p0{font-size:12px;background:var(--accent-soft);color:var(--accent);border:1px solid #dfe4fb;padding:4px 9px;border-radius:7px;font-weight:500}
+
+  .cat-intro{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-top:18px;box-shadow:var(--shadow)}
+  .cat-intro p{margin:0;color:var(--muted);font-size:14.5px}
+  .flow3{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+  .flow3 .step{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 13px;font-size:13px;font-weight:600;color:var(--muted);box-shadow:var(--shadow)}
+  .flow3 .step small{font-weight:400;font-size:11px;color:var(--faint);margin-top:1px}
+  .flow3 .step.on{border-color:var(--ac);background:#eef2fd;color:var(--ac)}
+  .flow3 .step.on small{color:var(--ac)}
+  .flow3 .arr{color:var(--faint);font-weight:700;font-size:15px}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .mk{width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .mk.sim{background:var(--ok-bg);color:var(--ok)}.mk.parcial{background:var(--mid-bg);color:var(--mid)}.mk.nao{background:var(--line2);color:var(--faint)}
+  .catfilter{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 4px}
+  .chip{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:6px 13px;border-radius:999px;cursor:pointer;font-size:13px;box-shadow:var(--shadow)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:none}
+  .catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;margin-top:6px}
+  .catcard{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+  .cathead{padding:15px 18px;border-bottom:1px solid var(--line2);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .cathead h3{margin:0;font-size:17px;font-weight:700}.cathead .fam{font-size:11.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px}
+  .scorebadge{font-size:14px;font-weight:800;padding:4px 10px;border-radius:9px;white-space:nowrap;line-height:1}
+  .scorebadge small{font-weight:600;opacity:.6;font-size:10px}
+  .scorebadge.ok{background:var(--ok-bg);color:var(--ok)}.scorebadge.medio{background:var(--mid-bg);color:var(--mid)}.scorebadge.alto{background:var(--hi-bg);color:var(--hi)}
+  .scorebadge.inv{background:var(--line2);color:var(--faint)}
+  .scorelbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:700;display:block;text-align:right;margin-bottom:2px}
+  .cattbl{width:100%;border-collapse:collapse}
+  .cattbl th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:600;text-align:center;padding:9px 6px;border-bottom:1px solid var(--line2)}
+  .cattbl th.r{text-align:left;padding-left:18px}
+  .cattbl td{padding:8px 6px;font-size:13.5px;border-bottom:1px solid var(--line2)}
+  .cattbl td.r{text-align:left;padding-left:18px}.cattbl td.c{text-align:center;width:84px}
+  .cattbl tr:last-child td{border-bottom:none}
+  .catnote{padding:11px 18px;font-size:12.5px;color:#8a6d2a;background:#fffdf6;border-top:1px solid #f1e7c9}
+  .depmap{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-top:4px}
+  .deproot{border:1px solid var(--line);border-left:4px solid var(--hi);border-radius:12px;padding:14px 16px;background:#fff}
+  .drhead{font-weight:700;color:#7a1f24;font-size:15px}
+  .drrel{color:var(--faint);font-size:12.5px;margin:6px 0 9px;text-transform:uppercase;letter-spacing:.04em}
+  .dritems{display:flex;flex-wrap:wrap;gap:8px}
+  .dritem{background:#f5f7fb;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--ink)}
+  .cmpwhy{color:var(--faint);font-size:11.5px;margin-top:2px;line-height:1.35}
+  .hf-verdict{background:#fff;border:1px solid var(--line);border-left:5px solid var(--hi);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);margin-top:6px}
+  .hf-verdict .rec{font-size:18px;font-weight:800;color:#8a1119}
+  .hf-verdict .score{display:inline-block;background:#fbd5d5;color:#8a1119;border-radius:8px;padding:1px 10px;font-weight:800;margin-left:8px;font-size:15px}
+  .hf-verdict .proj{color:var(--muted);font-size:13.5px;margin-top:5px}
+  .hf-pil{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:14px 0 6px}
+  .hf-pil .b{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .hf-pil .b .l{font-size:12px;color:var(--muted)} .hf-pil .b .n{font-weight:800;font-size:17px}
+  .hf-prog{font-weight:700;color:var(--muted);margin:18px 0 8px}
+  .hf-sec{font-size:15px;font-weight:700;margin:18px 0 8px}
+  .hf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+  .hf-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px 30px;box-shadow:var(--shadow);cursor:pointer;position:relative}
+  .hf-card:hover{border-color:var(--ac)}
+  .hf-card.done{opacity:.62;border-color:var(--ok);background:#f6fbf8}
+  .hf-card.done .cond{text-decoration:line-through}
+  .hf-card .hid{font-family:ui-monospace,Menlo,monospace;font-weight:700;color:var(--ac);font-size:12px}
+  .hf-card .cond{font-weight:600;margin:5px 0;font-size:14px}
+  .hf-card .crit{color:var(--faint);font-size:11.5px;margin-top:6px;line-height:1.4}
+  .hf-card .meta2{position:absolute;left:14px;bottom:9px;font-size:11px;color:var(--faint)}
+  .hf-card .st{position:absolute;right:12px;bottom:9px;font-size:11px;font-weight:700;color:var(--faint)}
+  .hf-card.done .st{color:var(--ok)}
+  .cattbl tr.gap{background:#fff6f6}
+  .cattbl tr.gap td.r{color:#7a1f24}
+  .reachb{display:inline-block;min-width:24px;text-align:center;background:#eef2fb;border:1px solid var(--line);border-radius:7px;padding:1px 8px;font-weight:700;font-size:12.5px;color:var(--ac)}
+  .covline{font-size:13px;color:var(--muted);margin:0 0 7px}
+  .covbar{display:flex;height:9px;border-radius:6px;overflow:hidden;border:1px solid var(--line);background:#eef1f7}
+  .covbar span{display:block}
+  .covbar .cf{background:var(--ok)}.covbar .cp{background:var(--mid)}.covbar .cn{background:#dde3ee}
+  .covleg{display:flex;gap:14px;margin-top:7px;font-size:11.5px;color:var(--faint)}
+  .covleg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  .covleg i.cf{background:var(--ok)}.covleg i.cp{background:var(--mid)}.covleg i.cn{background:#cfd6e4}
+  .acref{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;background:#eef2fd;color:var(--ac);border:1px solid #d6e0fb;border-radius:5px;padding:0 5px;font-weight:700;white-space:nowrap}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;margin-top:26px;box-shadow:var(--shadow)}
+  .panel h2{margin:0 0 4px;font-size:21px;font-weight:700}.panel .sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+  .tcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px}
+  .tcard{background:#fafbfc;border:1px solid var(--line2);border-radius:12px;padding:15px}
+  .tcard .t{font-weight:700;margin-bottom:5px;font-size:14.5px}.tcard p{margin:0;color:var(--muted);font-size:13px}.tcard .where{color:var(--faint);font-size:12px;margin-top:8px}
+  .road{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .lane{background:#fafbfc;border:1px solid var(--line2);border-radius:13px;padding:16px}
+  .lane h4{margin:0 0 3px;font-size:15.5px;font-weight:700}.lane .cap{color:var(--faint);font-size:12px;margin-bottom:12px}
+  .lane.p0 h4{color:var(--hi)}.lane.p1 h4{color:var(--mid)}.lane.p2 h4{color:var(--accent)}
+  .item{font-size:13px;padding:9px 11px;border:1px solid var(--line2);border-radius:9px;margin-bottom:8px;background:var(--card)}
+  .item b{color:var(--ink)}.item .src{font-size:11.5px;color:var(--faint)}
+  .p0face{margin-top:2px}
+  /* Lista de achados */
+  .lista-tools{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+  .ltrow{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .ltrow .lbl{color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.6px;min-width:78px;font-weight:600}
+  .ltrow select{background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:6px 10px;border-radius:8px;font-size:13px}
+  .ltrow input[type=search]{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:7px 12px;border-radius:8px;font-size:13.5px}
+  .lcount{color:var(--muted);font-size:13px;margin:0 0 8px}
+  table.findings{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  table.findings thead th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:600;text-align:left;padding:11px 12px;border-bottom:1px solid var(--line2);background:#fafbfc;cursor:pointer;white-space:nowrap}
+  table.findings td{padding:11px 12px;border-bottom:1px solid var(--line2);font-size:13.5px;vertical-align:top}
+  table.findings tr:last-child td{border-bottom:none}
+  table.findings tr:hover td{background:#fafbfc}
+  .cgrupo{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
+  .cgrupo.Jornada{background:#eef4ff;color:#3257c5}.cgrupo.Consumo{background:#e9f3ee;color:#2c8a59}.cgrupo.Bastidores{background:#f1ecfb;color:#7a4fc0}
+  .cmod{font-weight:600;color:var(--ink);font-size:12.5px}.cetapa{color:var(--faint);font-size:11.5px}
+  .cimp{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:6px;background:var(--line2);color:var(--muted);margin:1px}
+  .pprio{font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap}
+  .pprio.P0{background:var(--hi-bg);color:var(--hi)}.pprio.P1{background:var(--mid-bg);color:var(--mid)}.pprio.P2{background:var(--line2);color:var(--muted)}.pprio.Estrutural{background:var(--accent-soft);color:var(--accent)}
+  tr.frow{cursor:pointer} tr.frow:hover td{background:#f3f6fb}
+  tr.frow.open td{background:#eef1fd}
+  .rcaret{display:inline-block;color:var(--faint);font-size:10px;transition:.2s;margin-right:4px} tr.frow.open .rcaret{transform:rotate(90deg)}
+  tr.fdetail{display:none} tr.fdetail.open{display:table-row}
+  tr.fdetail td{background:#fafbfc;padding:14px 18px;border-bottom:2px solid var(--line)}
+  .fd{display:flex;flex-direction:column;gap:9px;max-width:900px}
+  .fdline{display:flex;gap:12px;font-size:13.5px;align-items:baseline}
+  .fdlbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:700;min-width:130px;flex-shrink:0}
+  .fdline .v{color:var(--ink)}
+  .facao{display:inline-block;font-size:12px;padding:3px 9px;border-radius:7px;background:var(--accent-soft);color:var(--accent);margin:1px;border:1px solid #dfe4fb}
+  code.fid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;background:var(--line2);color:var(--muted);padding:2px 6px;border-radius:5px;cursor:pointer;white-space:nowrap}
+  code.fid:hover{color:var(--ink);background:#e3e7ee} code.fid.copied{background:var(--ok-bg);color:var(--ok)}
+  .fidbig{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--accent);font-weight:700}
+  @media(max-width:760px){table.findings{font-size:12px}table.findings .hidecol{display:none}}
+  .foot{color:var(--faint);font-size:12.5px;margin-top:28px;border-top:1px solid var(--line);padding-top:16px}
+  @media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}.road{grid-template-columns:1fr}.bars{grid-template-columns:1fr}.grid,.catgrid{grid-template-columns:1fr}.stage{padding-left:48px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Raio-X AFL</h1>
+    <p class="lead">A plataforma vista pela <b>jornada do usuário</b> — do acesso à Inbox — com as camadas de <b>bastidores</b> (Governança, FinOps, Segurança, Privacidade, Pagamentos, Autenticação, Resiliência de provedor, exclusão de dados…). Oito lentes: <b>jornada</b>, <b>consumo dos serviços</b>, <b>fonte de dados</b>, <b>achados</b>, <b>ações</b>, <b>dependências</b>, <b>plano de ação</b> e <b>handoff</b>. Linguagem simples; detalhe técnico a um clique.</p>
+    <div class="meta">Fontes: 9 relatórios de avaliação técnica (mai/2026) + 11 análises de integração (jun/2026) + Due Diligence técnica e aprofundamento de rate-limits do CTO (jun/2026). Itens marcados “A auditar” ainda não passaram por análise detalhada.</div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="nav">
+    <button class="navbtn on" data-v="journey">Jornada do usuário</button>
+    <button class="navbtn" data-v="consumo">Consumo dos serviços</button>
+    <button class="navbtn" data-v="fontes">Fonte de dados</button>
+    <button class="navbtn" data-v="lista">Lista de achados</button>
+    <button class="navbtn" data-v="acoes">Lista de ações</button>
+    <button class="navbtn" data-v="deps">Dependências</button>
+    <button class="navbtn" data-v="plan">Por onde começar</button>
+    <button class="navbtn" data-v="handoff">Handoff</button>
+  </div>
+
+  <div class="view on" id="journey"></div>
+
+  <div class="view" id="consumo">
+    <div class="flow3"><span class="step">Conectar<small>Integração</small></span><span class="arr">→</span><span class="step">Configurar fonte<small>Fonte de dados</small></span><span class="arr">→</span><span class="step on">Usar<small>você está aqui</small></span></div>
+    <div class="cat-intro">
+      <p><b>Camada transversal — o que o agente faz com cada ferramenta já conectada.</b> Não é um passo da jornada: o consumo acontece o tempo todo (na conversa, nas automações, etc.). Duas visões <b>distintas</b>: o <b>card de uso</b> de cada serviço (como o agente usa: maturidade, o que faz, lacunas, riscos) e, abaixo, os <b>recursos da integração</b> num comparativo Serviço × Agente com o <b>porquê</b> de cada lacuna.</p>
+      <div class="legend">
+        <span><span class="mk sim">✓</span> <b>Pleno</b> — faz por completo</span>
+        <span><span class="mk parcial">◐</span> <b>Parcial/limitado</b> — faz só em parte ou bloqueado por permissão</span>
+        <span><span class="mk nao">–</span> <b>Indisponível</b> — não faz (a ferramenta até permite). Passe o mouse no item ou veja o porquê abaixo.</span>
+      </div>
+      <p style="margin:12px 0 0;color:var(--muted);font-size:13px"><b>Dois scores por serviço:</b> <b>Maturidade</b> (0–100) = média de Leitura, Escrita, Login e Cobertura; <b>Habilitado</b> (%) = quanto do que a integração permite já está desenvolvido na plataforma (✓=1, ◐=0,5). Abra <b>“Detalhe técnico”</b> em cada card para ver o comparativo.</p>
+    </div>
+    <div class="catfilter" id="catfilter"></div>
+    <div class="grid" id="consumogrid" style="margin-bottom:8px"></div>
+    <div class="panel" style="margin-top:8px">
+      <h2>O que dá para usar na integração × o que a plataforma já faz</h2>
+      <p class="sub">Por recurso: <b>Possível na integração</b> (o que dá para configurar/usar) × <b>Já na plataforma</b> (o que está desenvolvido), com o <b>porquê</b> de cada lacuna. A diferença entre as duas colunas é o seu <b>backlog de oportunidade</b>.</p>
+      <div class="catgrid" id="catgrid"></div>
+    </div>
+  </div>
+
+  <div class="view" id="fontes">
+    <div class="flow3"><span class="step">Conectar<small>Integração</small></span><span class="arr">→</span><span class="step on">Configurar fonte<small>você está aqui</small></span><span class="arr">→</span><span class="step">Usar<small>Consumo</small></span></div>
+    <div class="cat-intro"><p><b>Como cada aplicação vira uma fonte de dados — o que é possível oferecer × o que a aplicação oferece hoje.</b> As linhas em <b style="color:var(--hi)">vermelho</b> (Oferecido = <span class="mk nao">–</span>) são recursos que <b>dá para prover ao usuário, mas a aplicação ainda não oferece</b> — o gap de produto na criação/configuração da fonte. Ex.: no Google não dá para criar fonte por <b>pasta</b> nem por <b>link</b>, só arquivo a arquivo.</p>
+      <div class="legend"><span><span class="mk sim">✓</span> Possível / Oferecido</span><span><span class="mk parcial">◐</span> Parcial</span><span><span class="mk nao">–</span> Não oferecido (gap)</span></div>
+    </div>
+    <div id="fontes-host"></div>
+  </div>
+
+  <div class="view" id="lista">
+    <div class="lista-tools">
+      <div class="ltrow"><span class="lbl">Grupo</span><span id="f-grupo"></span></div>
+      <div class="ltrow"><span class="lbl">Severidade</span><span id="f-sev"></span></div>
+      <div class="ltrow"><span class="lbl">Prioridade</span><span id="f-prio"></span></div>
+      <div class="ltrow"><span class="lbl">Tipo (afeta)</span><span id="f-imp"></span></div>
+      <div class="ltrow"><span class="lbl">Jornada / Módulo</span><select id="f-etapa"></select><input type="search" id="f-q" placeholder="Buscar no achado ou etapa (ex: Conversa, Inbox, Jira)…"></div>
+    </div>
+    <p class="lcount" style="color:var(--faint);margin-bottom:4px">A <b>Prioridade</b> segue a <b>Severidade</b> do achado (Alto→P0, Médio→P1, Baixo→P2). O plano curado de primeira onda está na aba <b>“Por onde começar”</b>.</p>
+    <p class="lcount" id="lcount"></p>
+    <table class="findings"><thead><tr>
+      <th data-sort="id">ID</th><th data-sort="grupo">Grupo</th><th data-sort="etapa">Etapa / Módulo</th>
+      <th data-sort="texto">Achado</th><th class="hidecol" data-sort="imp">Afeta</th>
+      <th data-sort="sevRank">Severidade</th><th data-sort="prioRank">Prioridade</th>
+    </tr></thead><tbody id="findings-body"></tbody></table>
+  </div>
+
+  <div class="view" id="acoes">
+    <div class="lista-tools">
+      <div class="ltrow"><span class="lbl">Grupo</span><span id="fa-grupo"></span></div>
+      <div class="ltrow"><span class="lbl">Severidade</span><span id="fa-sev"></span></div>
+      <div class="ltrow"><span class="lbl">Prioridade</span><span id="fa-prio"></span></div>
+      <div class="ltrow"><span class="lbl">Tipo (afeta)</span><span id="fa-imp"></span></div>
+      <div class="ltrow"><span class="lbl">Jornada / Módulo</span><select id="fa-etapa"></select><input type="search" id="fa-q" placeholder="Buscar na ação ou área…"></div>
+    </div>
+    <p class="lcount" style="color:var(--faint);margin-bottom:4px">Visão <b>unificada e deduplicada</b> das ações, com os <b>mesmos filtros</b> da Lista de achados. <b>Severidade</b> = a maior entre os achados que a ação endereça; <b>Resolve</b> = achados que a ação <b>fecha</b> (vínculo curado); quando não há vínculo, mostra os achados do mesmo tema.</p>
+    <p class="lcount" id="acount"></p>
+    <table class="findings actions"><thead><tr>
+      <th data-sort="id">ID</th><th data-sort="grupo">Grupo</th><th data-sort="reach">Áreas</th>
+      <th data-sort="texto">Ação</th><th class="hidecol" data-sort="imp">Afeta</th>
+      <th data-sort="sevRank">Severidade</th><th data-sort="prioRank">Prioridade</th>
+    </tr></thead><tbody id="acoes-body"></tbody></table>
+  </div>
+
+  <div class="view" id="plan">
+    <div class="panel" style="margin-top:18px"><h2>As duas raízes</h2><p class="sub">Quase tudo se conecta a estes dois padrões. Atacá-los resolve muitos sintomas de uma vez.</p><div class="tcards" id="trans"></div></div>
+    <div class="panel"><h2>Por onde começar</h2><p class="sub"><b>Agora</b>: pouco esforço, melhora visível. <b>Próximo</b>: capacidade e robustez. <b>Estrutural</b>: ataca as raízes.</p><div class="road" id="road"></div></div>
+  </div>
+
+  <div class="view" id="deps">
+    <div class="panel" style="margin-top:18px">
+      <h2>Mapa de dependências entre os temas</h2>
+      <p class="sub">Além da gravidade (o <i>quê</i>), isto mostra o <b>porquê da ordem</b>. Os blocos <b style="color:var(--hi)">vermelhos</b> são <b>causas-raiz</b>: atacá-los <b>destrava ou resolve</b> vários achados de uma vez (as setas indicam "causa / destrava / amplia"). Resolver a raiz rende mais do que tratar folha por folha.</p>
+      <div class="depmap" id="depmap"></div>
+      <p class="sub" style="margin-top:14px">Leitura prática: as duas raízes que mais destravam são <b>banco compartilhado</b> (deploys, LGPD, órfãos, tipo de fonte, segurança) e <b>escopo OAuth</b> (pasta do Google, Teams/SharePoint, marcadores do Gmail). Na conversa, há uma <b>cadeia própria</b>: o cancelamento ao trocar de tela e o bug do marcador convergem no "você pediu pausa" e no stream não retomável.</p>
+    </div>
+  </div>
+
+  <div class="view" id="handoff">
+    <div class="cat-intro"><p><b>Handoff Labzz → Tecnologia.</b> Espelha a Due Diligence do CTO: o veredito, os scores por pilar e as <b>condições</b> para o produto sair de <b>NO-GO temporário</b> para <b>GO condicional</b>. Clique num cartão para marcar como <b>concluído</b> (salvo neste navegador).</p></div>
+    <div id="handoff-host"></div>
+  </div>
+
+  <div class="foot">Detalhe por tema no repositório: <b>Relatorio-AFL-*.pdf</b>, <b>AFL-analise-memoria-agentes.md</b> e <b>analise-integracao-*.md</b> (11 integrações).</div>
+</div>
+
+<script>
+function bar(l,v){const c=v>=4?'var(--ok)':v>=3?'var(--mid)':'var(--hi)';return `<div class="bar"><span style="min-width:62px">${l}</span><div class="track"><div class="fill" style="width:${v*20}%;background:${c}"></div></div></div>`}
+const IMPCLASS={'Experiência':'exp','Custo':'cus','Segurança':'seg','Conformidade':'con','Estabilidade':'est'};
+function scoreClass(s){return s>=70?'ok':s>=40?'medio':'alto';}
+function matScore(d){if(d.inv||!d.mat||d.mat.Leitura===undefined)return null;return Math.round((d.mat.Leitura+d.mat.Escrita+d.mat.Auth+d.mat.Cobertura)/20*100);}
+function scoreBadge(d){const s=matScore(d);if(s===null)return `<div style="text-align:right"><span class="scorelbl">Maturidade</span><span class="scorebadge inv">—</span></div>`;return `<div style="text-align:right"><span class="scorelbl">Maturidade</span><span class="scorebadge ${scoreClass(s)}" title="Média de Leitura, Escrita, Login e Cobertura">${s}<small>/100</small></span></div>`;}
+const MKVAL={sim:1,parcial:0.5,nao:0};
+function catScore(c){let serv=0,ag=0;c.rows.forEach(r=>{const sv=MKVAL[r[1]],av=MKVAL[r[2]];serv+=sv;ag+=Math.min(av,sv);});return serv>0?Math.round(ag/serv*100):0;}
+const DEPTH={aud:['aud','Auditado'],parc:['parc','Parcial'],todo:['todo','A auditar']};
+
+// ===== MÓDULOS / FRENTES (cards de feature) =====
+const MOD=[
+ // 1 Cadastro
+ {id:'cadastro',name:'Cadastro na aplicação',etapa:'cadastro',depth:'aud',
+  headline:'Funciona, mas guarda o CPF sem proteção e não verifica o e-mail.',
+  plain:'O usuário cria a conta. Três pontos: o CPF é guardado em texto puro; a verificação de e-mail não é implementada de verdade (os endpoints "fingem" verificar); e o cadastro revela se um e-mail já existe.',
+  impacto:['Conformidade','Segurança','Experiência'],resumo:'Cadastro com allowlist de domínio (opcional) e hash bcrypt. CPF em texto puro. verify-email/resend-verification são stubs TODO. EmailAlreadyExists revela contas existentes.',
+  achados:[['alto','CPF guardado em texto puro'],['alto','Verificação de e-mail não implementada (endpoints são stubs que retornam sucesso)'],['medio','Cadastro revela se o e-mail já existe (enumeração)'],['medio','Sem agente pessoal criado automaticamente no cadastro']],
+  acoes:[['P0','Criptografar/tokenizar o CPF'],['P0','Implementar a verificação de e-mail de verdade'],['P2','Mensagem neutra (não revelar e-mail existente)']]},
+ {id:'login',name:'Login / Acesso',etapa:'cadastro',depth:'aud',
+  headline:'Funciona, mas falta 2FA e trava de tentativas no login.',
+  plain:'O acesso usa senha (bcrypt) + JWT + sessão, com base sólida e captcha obrigatório no login de admin. Faltam: verificação em duas etapas (2FA), política de senha forte (hoje só 8 caracteres) e bloqueio por tentativas no login comum.',
+  impacto:['Segurança','Experiência'],resumo:'bcrypt cost 10; access 15m / refresh 7d (refresh com rotação e throttle). Throttle global em todas as rotas; captcha p/ admin. Sem 2FA. Política de senha: mínimo 8 chars, sem complexidade. Login sem lockout dedicado.',
+  achados:[['medio','Sem verificação em duas etapas (2FA/MFA)'],['medio','Política de senha fraca (mínimo 8 caracteres, sem complexidade)'],['medio','Login sem bloqueio progressivo por tentativas (só throttle global)'],['baixo','Possível timing oracle de enumeração no login']],
+  acoes:[['P1','2FA/MFA (obrigatório p/ admin); política de senha mais forte'],['P1','Lockout progressivo no login'],['P2','Mitigar timing/enumeração']]},
+ {id:'forgotpw',name:'Esqueci a senha',etapa:'cadastro',depth:'aud',
+  headline:'Recupera por e-mail, mas redefinir não expulsa o invasor.',
+  plain:'O “esqueci a senha” envia um link por e-mail (uso único, com mensagem que não revela se o e-mail existe — bom). Porém: redefinir a senha NÃO encerra as sessões já abertas, e o link vale 24h (longo).',
+  impacto:['Segurança','Experiência'],resumo:'Token uuid de uso único, expiração verificada, mensagem anti-enumeração. Mas: redefinir não revoga refresh tokens (válidos por 7 dias); token de reset com 24h; sem limite dedicado de pedidos.',
+  achados:[['alto','Redefinir a senha não invalida sessões/refresh existentes (atacante segue logado até 7 dias)'],['medio','Token de reset válido por 24 horas (longo)'],['medio','Sem limite dedicado de pedidos (risco de "email bombing")'],['baixo','Token de reset trafega em query string (verify)']],
+  acoes:[['P0','Revogar sessões/refresh ao redefinir a senha'],['P1','Reduzir validade do token p/ 30–60 min + guardar com hash'],['P1','Limite de pedidos no forgot-password']]},
+ // 2 Criação do agente
+ {id:'sso',name:'Login social (Google / Microsoft / Eduzz)',etapa:'cadastro',depth:'aud',
+  headline:'Entrar com Google/Microsoft/Eduzz funciona — mas vincula conta só pelo e-mail e fura a trava de domínio.',
+  plain:'Dá para entrar com Google, Microsoft ou Eduzz. Por baixo, o sistema acha ou cria o usuário só pelo e-mail do provedor, sem conferir se o e-mail é verificado e sem aplicar a regra de domínio (@eduzz) que vale no cadastro normal. Isso abre risco de entrar na conta de outra pessoa com o mesmo e-mail e de cadastro por fora da política.',
+  impacto:['Segurança','Conformidade'],resumo:'OAuthButtons (Google/Microsoft/Eduzz) → /auth/<provedor>/login → callback → /auth/callback?token=... . findOrCreateUserFromOAuth vincula por e-mail sem checar email_verified e sem allowedEmailDomains; state com fallback fixo (default-state-secret); token/e-mail na URL; redirect derivado de x-forwarded-host. Não auditado antes (a DD do CTO marcou SSO como "não testado").',
+  achados:[['alto','Login social vincula a uma conta existente apenas pelo e-mail, sem checar o email_verified do provedor — risco de account takeover (entra na conta local de mesmo e-mail)'],['alto','Login social não aplica a trava de domínio (@eduzz): cria usuário com qualquer e-mail — bypass do allowlist que vale no cadastro local'],['medio','Segredo do state do OAuth tem fallback fixo no código (default-state-secret) — state forjável = login-CSRF / confusão de conta se a env faltar'],['medio','Token e e-mail trafegam na URL no callback de login (/auth/callback?token=...) — ficam em histórico/logs/Referer'],['baixo','Redirect URI derivado de x-forwarded-host (se não fixado no proxy)'],['medio','App Google não verificado / consent screen provavelmente em "Testing": o usuário vê o aviso "app não verificado" e precisa confirmar para seguir. Os escopos sensíveis (Gmail, Calendar, Drive) exigem verificação do app no Google e, para o Drive restrito, avaliação de segurança (CASA). É estado de configuração no Google Cloud, não código — também trava a fonte de pasta do Google (drive.readonly)']],
+  acoes:[['P0','Exigir email_verified do provedor e não vincular automaticamente a conta local existente (linking explícito/confirmado)'],['P0','Aplicar a trava de domínio (allowedEmailDomains) também no login social'],['P1','Assinar o state (HMAC) com segredo obrigatório, sem fallback, + nonce/expiração'],['P1','Entregar a sessão por cookie httpOnly/POST em vez de token na URL'],['P2','Fixar x-forwarded-host / derivar o redirect de uma allowlist'],['P1','Concluir a verificação do app no Google (OAuth consent) e publicar em produção; iniciar o CASA para os escopos restritos (Drive)']]},
+ {id:'comites',name:'Comitês de Agentes (grupos)',etapa:'conversa',depth:'aud',
+  headline:'Comitês têm boa autorização — falta controlar quem cresce o grupo e o que vaza entre membros.',
+  plain:'O Comitê é um grupo onde vários agentes conversam, com membros e convites. O acesso é bem protegido (só dono ou membro) e o convite usa token aleatório com validade. Os pontos de atenção: qualquer membro (não só o dono) pode convidar/adicionar gente; cada mensagem faz todos os agentes responderem (custo N×) debitado a quem enviou e sem teto; e membros diferentes compartilham a mesma conversa, o que pode expor dados/contexto entre eles.',
+  impacto:['Segurança','Custo','Experiência'],resumo:'Módulo agent-groups (criar/membros/convites/mensagens). Autorização por dono/membro em quase todos os handlers (positivo); convite com randomBytes(32) + expiração de 7 dias (positivo). Mas: add-group-member e create-group-invite permitem qualquer MEMBRO (não só o dono); send-group-message faz todos os agentes responderem (Promise.allSettled, N× custo) com o userId do remetente e sem checagem de cota; os agentes usam as conexões do remetente (getToolsForAgentWithConnections com userId do remetente) — contexto/dados compartilhados entre membros. Antes só o chat em grupo (fan-out) tinha sido tocado, em Menção & Grupos. Cada agente usa o mesmo executeAgentLoop do chat (mesma latência) e o contexto do comitê é só as últimas 15 mensagens do grupo.',
+  achados:[['medio','Qualquer membro (não só o dono) pode adicionar membros e criar convites — o grupo cresce sem controle do dono'],['medio','Cada mensagem faz todos os agentes responderem (N× custo), debitado ao remetente e sem checagem de cota (fan-out sem teto)'],['medio','Membros diferentes compartilham a mesma conversa e os agentes usam as conexões do remetente — exposição de dados/contexto entre membros, sem consentimento granular'],['medio','Cada agente usa o mesmo pipeline do chat individual (4–5 chamadas de IA + loop de ferramentas) e vários respondem por mensagem (N×), com run síncrono — herda e multiplica a latência'],['medio','Janela de contexto do comitê é de só 15 mensagens (últimas 15 da história do grupo) — menor que as 30 do chat e enche mais rápido por misturar vários agentes; memória de longo prazo não injetada'],['baixo','Positivo: autorização por dono/membro nos handlers e convite com token aleatório (32 bytes) + expiração de 7 dias']],
+  acoes:[['P1','Restringir convite/adição de membros ao dono (ou a um papel de admin do comitê)'],['P1','Aplicar cota/teto de custo no fan-out do comitê (cruza com Menção & Grupos)'],['P1','Consentimento/escopo de dados no comitê: deixar claro o que cada membro expõe e isolar as conexões por agente/dono'],['P1','Levar as melhorias de latência do chat ao comitê (tirar o filtro do caminho crítico; limitar o fan-out) e tornar o run assíncrono'],['P1','Gerenciar a janela de contexto do comitê (resumo do grupo + injetar memória) — alinhar com a frente Memória']]},
+ {id:'prompt',name:'Prompt do agente',etapa:'criar',depth:'aud',
+  headline:'Define o comportamento, mas não tem guardrails de segurança.',
+  plain:'O prompt é texto livre e vira a instrução-mestra do agente; é montado a cada conversa com personalidade e ferramentas. Não há instruções padrão de segurança (anti-manipulação), e o prompt default vem em inglês numa plataforma pt-BR.',
+  impacto:['Experiência','Segurança'],resumo:'buildSystemPrompt combina personalidade (tom/estilo) + contexto de ferramentas. Prompt é texto livre sem sanitização (superfície de injeção, cruza com Segurança). getDefaultPrompt em inglês.',
+  achados:[['medio','Prompt é texto livre sem guardrails de segurança (anti-injeção)'],['baixo','Prompt default em inglês (inconsistência de idioma)']],
+  acoes:[['P1','Instruções de segurança padrão no system prompt'],['P2','Localizar o prompt default']]},
+ {id:'ia-personalidade',name:'Criação do Agente — IA (Personalidade)',etapa:'criar',depth:'aud',
+  headline:'Personalidade (perfil) e Prompt funcionam; os Traços entram só como etiqueta — a intensidade configurada nos sliders não chega ao prompt.',
+  plain:'Na etapa IA você escolhe Personalidade (o perfil: Assistente/Professor/...), Traços (sliders de detalhe/formalidade/humor) e o Prompt. No backend, o Prompt entra literal no system prompt e o perfil vira um modificador de comportamento. Já os Traços entram só como lista de rótulos ("Profissional, Amigável") — a intensidade numérica que você ajusta nos sliders é, na prática, decorativa: não influencia o prompt.',
+  impacto:['Experiência','Qualidade'],resumo:'buildSystemPrompt usa toneOfVoice, responseStyle, personalityTraits.join() e agentSubtype (modificador). personality.toPromptModifiers só emite acima de 70/50 numa escala 0-100, mas a UI/persistência usa ~0-10; o mapper entrega personality como objeto plano (sem o método); creativity hardcoded em 5.',
+  achados:[['alto','Intensidade dos Traços não chega ao prompt: o mapper entrega personality como objeto plano SEM toPromptModifiers → a linha de personalidade vira "" sempre'],['alto','Mesmo via VO, toPromptModifiers só dispara acima de 70 (50 p/ humor) numa escala 0-100, mas a persistência usa ~0-10 (defaults 5/3) → nunca cruza o limiar'],['medio','Quatro modelos/escala divergentes para o mesmo conceito: agent-edit (/10), PersonalAgentConfig (5 dims), VO (0-100), PERSONALITY_TRAITS (0-100)'],['medio','creativity hardcoded em 5 ao reconstruir da base (sem coluna) → a dimensão criatividade é sempre ignorada'],['medio','Traços entram só como rótulos planos: dois agentes "Profissional" com detalhe 90 e 40 geram a mesma linha de prompt'],['baixo','Fallback morto agent.personality?.traits (nem o VO nem o objeto plano têm .traits)']],
+  acoes:[['P1','Garantir que a intensidade dos Traços chegue ao prompt (expor toPromptModifiers ou traduzir os dims no builder)','AV-1381'],['P1','Unificar escala e modelo de personalidade ponta a ponta + persistir creativity (remover hardcode)','AV-1382'],['P2','Refletir a intensidade dos traços no prompt (não só o rótulo) e remover o fallback morto','AV-1383']]},
+ {id:'criacao-midia',name:'Criação do Agente — Mídia (Voz/Avatar)',etapa:'criar',depth:'aud',
+  headline:'A aba Mídia coleta voz e avatar/vídeo, mas o backend não consome boa parte: estabilidade/similaridade ignoradas, síntese sem caller e upload sem otimização.',
+  plain:'A etapa Mídia junta a Voz (ElevenLabs) e o Avatar/Vídeo. Você ativa voz, escolhe voz/idioma e ajusta estabilidade e similaridade; e envia imagem ou vídeo do avatar. No backend, porém, a maior parte dessa configuração não é usada: os sliders de voz são ignorados (valores fixos), a síntese não tem quem a chame numa conversa, e o upload de avatar/vídeo vai pro S3 sem nenhuma otimização.',
+  impacto:['Experiência','Custo','Qualidade'],resumo:'VoiceTab (ElevenLabs) + DualAvatarUpload (imagem/standby/active/video). audio-synthesis.service hardcoda stability 0.5/similarity 0.75 e não tem caller em produção. upload-avatar.handler envia o buffer ao S3 sem sharp/resize/compressão (controller só valida tipo e 10MB). HeyGen condicionado a HEYGEN_API_KEY.',
+  achados:[['alto','Estabilidade/Similaridade da voz são ignoradas: audio-synthesis.service hardcoda stability 0.5 e similarity_boost 0.75 — os sliders da aba Mídia não chegam ao ElevenLabs'],['alto','Síntese de voz sem caller no backend: AudioSynthesisService é injetado no twilio-webhook-processor mas synthesize/synthesizeToBuffer não são chamados em produção (só em testes) → voz configurada não gera áudio no servidor'],['alto','Upload de avatar/vídeo sem otimização (viola §9.4): controller só valida tipo e 10MB; o handler envia o buffer ao S3 sem sharp/resize 512×512/compressão — imagem cheia servida em todo lugar'],['medio','Fallback sem S3 grava a imagem inteira como base64 numa coluna do banco — linha pesada, sem redução'],['medio','Dois VoiceTab com campos divergentes: voiceId+voiceSettings.stability vs elevenLabsVoiceId+voiceStability — risco de salvar/ler campo errado'],['medio','Vídeo só configurável em edição: DualAvatarUpload só renderiza com !isCreateMode → na criação não dá para definir vídeo'],['baixo','HeyGen (avatar-vídeo) condicionado a HEYGEN_API_KEY; sem a env, indisponível (estado de config)']],
+  acoes:[['P1','Ligar a síntese de voz ao fluxo de conversa e passar estabilidade/similaridade da config (ou refletir na UI que voz não é suportada)','AV-1384'],['P1','Otimizar avatar/vídeo no upload com sharp (512×512, ~85, ≤50KB) e definir política de vídeo (720p/≤500KB); eliminar base64 cru','AV-1385'],['P2','Unificar os campos de voz num único contrato e permitir configurar vídeo já na criação','AV-1386']]},
+ {id:'gerenciamento-agente',name:'Cadastro do Agente — Gerenciamento (status/exclusão)',etapa:'criar',depth:'aud',
+  headline:'A aba Gerenciamento tem ativar/desativar, apagar mensagens e "deletar". O grave: "Deletar Permanentemente" só desativa — e nem isso isola o agente.',
+  plain:'A aba Gerenciamento (Status, Histórico, Zona de Perigo) deixa desativar o agente, apagar mensagens e "Deletar Permanentemente" (com confirmação digitando DELETAR). Mas o backend trata o delete como soft (só isActive=false): nada é apagado. E o soft-delete não isola o agente — ele continua respondendo no chat, continua aparecendo e funcionando para quem recebeu o compartilhamento, e segue rodando automações já criadas. Só some da lista do dono e do seletor de nova automação, que filtram por ativo.',
+  impacto:['Segurança','Conformidade','Custo'],resumo:'DELETE /api/agents/:id hardcoda soft=true (controller:479) → deactivate(); sem caminho de hard delete. repository.delete só remove a linha; verifyNoDependencies é TODO; AgentDeletedEvent sem handler. chat/stream/shared/automação não checam agents.isActive. findByReceiver filtra só shared_agents.isActive.',
+  achados:[['critico','"Deletar Permanentemente" é soft delete: controller:479 hardcoda soft=true → só deactivate(). Conversas/documentos/embeddings/S3 permanecem (LGPD); a UI promete remoção total e exige digitar DELETAR'],['critico','Agente "excluído" continua visível e operante para quem recebeu o compartilhamento: findByReceiver filtra só shared_agents.isActive, sem condição sobre agents.isActive; o delete não toca o share'],['alto','Automações já criadas seguem rodando: execute-consolidated-automation valida só automation.isActive, nunca agents.isActive; o delete não pausa automações'],['alto','Desativar não é aplicado no chat: nem chat-with-agent nem stream-chat checam agents.isActive → agente inativo ainda responde por thread/URL'],['alto','Hard delete (inalcançável) deixaria órfãos: repository.delete remove só a linha; verifyNoDependencies é TODO; AgentDeletedEvent sem handler; arquivos S3 não saem'],['baixo','Aba Gerenciamento ignora props isPublic/availableForSale (_isPublic/_availableForSale) — controles mortos'],['baixo','Esconde só onde há re-filtro: lista do dono (isActive=true default) e seletor de nova automação (?type=personal)'],['alto','Limite do plano ignora inativos: a contagem (internal-users.controller:73-76 e create-agent:206) exclui isActive!==false → "deletar" libera o slot, mas o agente segue operando = bypass do teto contratado (contagens ainda fail-open)']],
+  acoes:[['P0','Tornar "Deletar Permanentemente" uma exclusão real (ou explicitar desativação na UI) + política de retenção/eliminação (LGPD)','AV-1387'],['P0','Isolar agente inativo: desativar/remover compartilhamentos, recusar chat por agente inativo, pausar automações que o referenciam','AV-1388'],['P1','Hard delete em cascata (conversas/docs/embeddings/S3/automações/shares) + verifyNoDependencies + handler do AgentDeletedEvent','AV-1389'],['P2','Limpar props mortos isPublic/availableForSale da aba','AV-1390'],['P1','Contabilizar coerentemente agentes inativos que ainda operam (ou impedir que operem) — fechar o bypass do limite e o fail-open das contagens','AV-1391']]},
+ {id:'fontesag',name:'Fontes de dados do agente',etapa:'criar',depth:'aud',
+  headline:'Precisa de fonte associada — e a cota de criação "libera" sob falha.',
+  plain:'Conectar a conta (ex.: Google) não basta: o agente só usa Calendar/Gmail/Drive se houver uma fonte associada. Além disso, se o serviço de cota estiver fora do ar, a criação de agentes é liberada mesmo acima do limite do plano.',
+  impacto:['Experiência','Custo'],resumo:'Acesso "gated" por agent_data_connections. verifyUserCanCreateAgent e verifyAgentSubtypeQuota são fail-open (liberam se a checagem falhar) — cruza com FinOps.',
+  achados:[['medio','Integrações exigem uma fonte de dados associada ao agente'],['medio','Cotas de criação são fail-open (liberam acima do limite sob instabilidade)'],['baixo','Mensagem "associe uma fonte" mesmo com a conta conectada']],
+  acoes:[['P1','Desacoplar conta conectada de fonte associada'],['P1','Política de cota fail-closed para limites de plano']]},
+ {id:'conhecimento',name:'Base de conhecimento',etapa:'criar',depth:'aud',
+  headline:'O pipeline real é forte; o problema é um "treinar" legado que finge funcionar.',
+  plain:'Enviar documentos funciona bem: lê PDF/Word/TXT, transcreve áudio e vídeo, vetoriza e faz busca semântica. O risco é um caminho antigo de "treinar" que reporta sucesso sem salvar nada — e a falta de aviso de quando o material já está pronto.',
+  impacto:['Experiência'],resumo:'Pipeline real (upload→S3→parse/transcrição Whisper→vetorização→busca com hierarquia de contexto) é robusto e detecta conteúdo vazio. Mas o comando legado train-agent é um stub (persistência/embeddings são TODO) ainda exposto no controller. Indexação assíncrona sem visibilidade.',
+  achados:[['alto','Caminho legado "train-agent" é um stub: reporta sucesso sem persistir nem vetorizar'],['medio','Indexação sem visibilidade de status ao usuário (pronto/falhou)'],['medio','Busca da base depende de o modelo decidir consultá-la'],['baixo','Sem busca na web genérica (há scrape/crawl de URLs)']],
+  acoes:[['P0','Aposentar/redirecionar o "train-agent" stub para o pipeline real'],['P1','Expor status de indexação; reduzir dependência da decisão do modelo']]},
+ {id:'compartilhamento',name:'Compartilhamento de agente',etapa:'criar',depth:'aud',
+  headline:'O receptor paga o uso de IA — mas acessa os dados do dono.',
+  plain:'Dá para compartilhar um agente com outro usuário (ele usa, não edita; o dono pode revogar). Quem conversa (o receptor) é quem paga o consumo de IA. Mas as ferramentas usam as credenciais do DONO — então o receptor lê e escreve nos Sheets/Drive/Jira do dono, sem um consentimento claro sobre o que está sendo exposto.',
+  impacto:['Segurança','Custo','Experiência'],resumo:'share-agent (só o dono; status pending→accepted; maxSharesPerAgent fail-open); receptor usa mas não edita (canBeModifiedBy=dono); revogação via guard (accepted+is_active). Consumo: cota/registro no userId de quem conversa (receptor), fail-open. Dados: tokenOwnerId=ds.owner_user_id (credencial do dono, incl. escrita). default_shared_agents auto-aceitos no cadastro.',
+  achados:[['alto','Compartilhar expõe os dados conectados do dono (sem consentimento granular)'],['medio','Atribuição "receptor paga × dados do dono" não é transparente; chave de LLM do dono confunde'],['medio','Cota fail-open; default_shared_agents auto-aceitos no cadastro']],
+  acoes:[['P0','Consentimento no share: mostrar/limitar quais fontes/credenciais o receptor acessa'],['P1','Tornar transparente quem paga o consumo; cota fail-closed']]},
+ // 4 Fonte de dados (configuração)
+ {id:'fonte-geral',name:'Fonte de dados — visão geral',etapa:'fonteconfig',depth:'aud',
+  headline:'Cada app vira fonte de um jeito — e o "tipo" já saiu errado várias vezes.',
+  plain:'Transversal a todas as apps: o "tipo" da fonte é frágil (já houve fontes do Jira gravadas como "plataforma de educação"), o desenho da tabela está duplicado/fora de sincronia entre serviços, e a sincronização é "manual" por padrão e sem visibilidade.',
+  impacto:['Estabilidade','Segurança'],resumo:'user_data_sources; allow_agent_write default false (bom); contexto pessoal×org com CHECK constraint (bom). Migrations revelam misclassificação (0054 Jira→education_platform; 0038/0018 Google). Schema do workflow-service nem lista jira_data/colunas Jira (banco real + agent-intelligence têm) = banco duplicado.',
+  achados:[['alto','Histórico de fontes com TIPO ERRADO (Jira→education_platform; Google)'],['alto','Schema de user_data_sources duplicado e divergente entre serviços'],['medio','Configurável × suportado: tipos do backend (Slack/GitHub/Databricks) não aparecem na tela; ERP/Banco oferecidos podem não ter suporte real'],['medio','Sincronização "manual" por padrão e sem visibilidade de indexação']],
+  acoes:[['P0','Validação forte de tipo (+ auto-correção); consolidar schema em fonte única'],['P1','Alinhar tipos oferecidos × suportados; visibilidade de sincronização']]},
+ {id:'fonte-google',name:'Fonte de dados — Google',etapa:'fonteconfig',depth:'aud',
+  headline:'Planilha, doc, arquivo ou pasta — via seletor do Google.',
+  plain:'Você transforma uma planilha, documento, arquivo ou pasta do Drive em fonte escolhendo no seletor do Google, e pode apontar abas e intervalos específicos. Ponto fraco: pelo escopo restrito, o arquivo precisa ser re-selecionado, e o tipo já precisou de correção em massa.',
+  impacto:['Experiência','Estabilidade'],resumo:'Tipos google_sheet/doc/drive_file/drive_folder/services_data. Colunas tipadas: googleFileId/Type/Name/Url, sheetNames[], sheetRange, googleWorkspaceSubtype. Seleção via Picker (escopo drive.file). Migrations 0018/0038 corrigiram tipos.',
+  achados:[['alto','Fonte de PASTA desativada (aba comentada, espera drive.readonly) → adiciona arquivo por arquivo'],['medio','Arquivo precisa ser re-selecionado pelo seletor (escopo drive.file)'],['medio','Histórico de tipos corrigidos em massa (0038/0018)']],
+  acoes:[['P0','Liberar fonte de pasta (drive.readonly + reativar aba)'],['P1','UX clara de re-seleção; validação de tipo']]},
+ {id:'fonte-google-publico',name:'Fonte de dados — Google (Link Público)',etapa:'fonteconfig',depth:'aud',
+  headline:'Planilha/Doc público por link — sem OAuth, só leitura. Seguro em credencial, mas repete o despejo bruto do AV-761 e fica fora do RAG.',
+  plain:'Você cola o link de um Sheets/Docs público ("qualquer pessoa com o link"). Não pede conta Google nem token — o backend baixa via /export anônimo. É o tipo mais seguro em credencial (nada para vazar) e sem risco de SSRF (a URL é sempre reconstruída como docs.google.com a partir do ID). Os pontos fracos: não há teto de tamanho (pode estourar o contexto/custo), não é vetorizado (sempre dump bruto, sem busca semântica) e o parser de CSV é frágil.',
+  impacto:['Estabilidade','Custo','Experiência'],resumo:'Tipos google_sheet_public/google_doc_public (standalone, sem integração). Leitura: readPublicGoogleDataSource → export?format=csv&gid / export?format=txt (fetch anônimo, timeout 30s). Sync só atualiza timestamp (não indexa). Escrita bloqueada: tipo não roteado no write-executor + sem token + flag allow_agent_write.',
+  achados:[['alto','Sem teto de tokens: readPublicGoogleDoc devolve o texto INTEIRO; readPublicGoogleSheet corta por maxRows (10k) mas não por caracteres — não aplica o guardrail do AV-761 → estouro de contexto e custo'],['alto','Fora do RAG: o sync só atualiza timestamp (não vetoriza) e o short-circuit semântico não cobre os tipos públicos → leitura sempre bruta'],['medio','Parser de CSV frágil: split por \\n antes de parsear e sem aspas escapadas → célula multi-linha/com aspas embaralha colunas'],['medio','Lê só 1 aba (gid; default 0); as demais ficam de fora sem aviso'],['medio','Link "Publicar na web" (/d/e/.../pub) cai em "URL inválida" — só aceita o link de compartilhamento /d/<id>'],['medio','Sem validação na criação: a URL não é checada nem testada; o erro só aparece na leitura'],['baixo','Governança: "qualquer pessoa com o link" incentiva expor dado sensível fora da plataforma; falta aviso na UI'],['baixo','Arquivo não-público pode retornar 200 com HTML de login, tratado como conteúdo (lixo) em vez de erro claro']],
+  acoes:[['P1','Aplicar teto de tokens/caracteres no caminho público (reusar guardrail do AV-761) em Sheet e Doc','AV-1374'],['P1','Vetorizar fontes públicas no sync e habilitar RAG na leitura','AV-1375'],['P1','Parser de CSV robusto (RFC 4180: aspas escapadas + quebra de linha em célula)','AV-1376'],['P2','Validar a URL na criação + detectar HTML de login e retornar erro claro','AV-1377'],['P2','Suportar múltiplas abas e link "Publicar na web" (ou orientar na UI)','AV-1378'],['P2','Aviso de governança na UI: não usar fonte pública para dados sensíveis','AV-1379']]},
+ {id:'fonte-microsoft',name:'Fonte de dados — Microsoft 365',etapa:'fonteconfig',depth:'aud',
+  headline:'Um tipo único genérico para SharePoint, OneDrive e Outlook.',
+  plain:'Todo o Microsoft 365 entra como um único tipo de fonte, configurado em texto livre (JSON) com IDs de site/biblioteca. Por não ter campos próprios, a config é mais sujeita a erro e difícil de validar — e o acesso depende de permissões não pedidas ao conectar.',
+  impacto:['Experiência','Estabilidade'],resumo:'Tipo único microsoft_365_data para SharePoint/OneDrive/Outlook; config em JSONB (site_id/drive_id), sem colunas tipadas; indexado via adapters SharePoint/Outlook; escopo Sites.*.All não consentido (ver Integração).',
+  achados:[['alto','Acesso bloqueado por escopo não consentido (SharePoint/Teams)'],['baixo','Positivo: a tela EXPÕE pastas (OneDrive/SharePoint) — ao contrário do Google'],['medio','Config via JSONB livre (validação fraca)']],
+  acoes:[['P0','Pedir escopos ao conectar'],['P1','Subtipos/validação por tipo de fonte']]},
+ {id:'fonte-jira',name:'Fonte de dados — Jira',etapa:'fonteconfig',depth:'aud',
+  headline:'Projeto e board viram fonte — mas o tipo já foi gravado errado.',
+  plain:'Uma fonte do Jira aponta projeto(s) e board(s), com varredura incremental das tarefas. O problema sério: fontes do Jira já foram gravadas com o tipo errado ("plataforma de educação"), quebrando tudo até uma correção em massa — e o desenho dessas colunas está fora de sincronia entre os serviços.',
+  impacto:['Estabilidade'],resumo:'Tipo jira_data; colunas jira_project_key(s)/board_id(s)/cloud_id/site_url; crawl cursors. Migrations 0054 (misclassificado como education_platform), 0040 (fix colunas), 0041 (cursors). Schema do workflow-service NÃO lista jira_data nem as colunas (divergência).',
+  achados:[['alto','Fontes Jira gravadas como education_platform (migration 0054)'],['alto','Schema divergente: workflow-service não tem jira_data/colunas Jira'],['medio','Config acoplada (board IDs necessários p/ sprint)']],
+  acoes:[['P0','Validação/auto-correção de tipo; consolidar schema']]},
+ {id:'fonte-notion',name:'Fonte de dados — Notion',etapa:'fonteconfig',depth:'aud',
+  headline:'Página ou base viram fonte — e o agente cria fontes sozinho.',
+  plain:'Páginas e bases do Notion viram fonte (uma fonte pode cobrir várias páginas). Detalhe: quando o agente cria uma página, ele auto-cria uma fonte e sincroniza — útil, mas pode multiplicar fontes sem o usuário perceber.',
+  impacto:['Experiência'],resumo:'Tipos notion_page/notion_database; colunas notionPageId/databaseId/pageTitle; config.notionPageIds[]; auto-conexão ao criar página (etapa 2) com dedup por página-pai; cleanup ao deletar.',
+  achados:[['medio','Auto-criação de fonte ao criar página (risco de sprawl)'],['baixo','Multi-página em array JSONB'],['baixo','Colunas tipadas (positivo)']],
+  acoes:[['P1','Auto-conexão opt-in; governança das fontes criadas']]},
+ {id:'fonte-mcp',name:'Fonte de dados — MCP & API/Web',etapa:'fonteconfig',depth:'aud',
+  headline:'Endereço livre = SSRF, e o segredo vai sem criptografia.',
+  plain:'Servidores MCP e APIs/sites customizados viram fonte apontando um endereço. Dois riscos herdados: o endereço é arbitrário (dá pra apontar para a infraestrutura interna) e a credencial/headers ficam guardados em texto puro.',
+  impacto:['Segurança'],resumo:'Tipos mcp_server, api_endpoint, webhook, web_scraping, database_table. Colunas apiEndpoint/method/headers(JSONB)/payload, mcpConnectionId/toolName/args. SSRF + segredo em texto puro (igual módulo de Integração).',
+  achados:[['alto','Endereço arbitrário (SSRF) sem bloqueio de IP interno'],['alto','Credencial/headers guardados em texto puro'],['medio','Config via JSONB livre']],
+  acoes:[['P0','Anti-SSRF (allowlist/bloqueio interno) + criptografar credenciais']]},
+ {id:'fonte-outros',name:'Fonte de dados — Outros',etapa:'fonteconfig',depth:'todo',
+  headline:'Slack, HubSpot, Tuya, WhatsApp, GitHub, Databricks — mapeados.',
+  plain:'Existem tipos de fonte para Slack (canal), HubSpot, Tuya, WhatsApp, GitHub (repo) e Databricks (tabela). Ainda não auditados a fundo.',
+  impacto:[],resumo:'Tipos slack_channel/slack_data, hubspot_data, tuya_devices, whatsapp_data, github_repo (colunas owner/name/branch/path), databricks_table (catalog/schema), linkedin_data, education_platform. Profundidade: auditoria pendente.',
+  achados:[['baixo','Tipos de fonte existem'],['baixo','Profundidade: análise detalhada pendente']],
+  acoes:[['P2','Auditar fontes restantes']]},
+ // 5 Conversa
+ {id:'streaming',name:'Streaming, Stop & sair durante o processamento',etapa:'conversa',depth:'aud',
+  headline:'Bem-feito em parar/sair — mas o cliente corta a resposta aos 30 segundos.',
+  plain:'Parar (Stop) e sair da conversa enquanto processa são robustos: a resposta é salva no servidor e aparece quando você volta. Porém o app desiste da resposta após 30 segundos (com erro de "timeout"), mesmo o servidor ainda gerando — o que corta respostas longas e gera custo invisível.',
+  impacto:['Experiência','Custo'],resumo:'SSE token a token. Stop = cancelamento explícito (registry AV-842 + marcador Redis cross-process AV-940), não depende de fechar a conexão. Persistência server-side independente do SSE e "cancel-aware". Slots de stream isolados por conversa. MAS: STREAM_TOTAL_TIMEOUT_MS=30s no front (comentário diz "15min" — não bate); e como o backend não confia em req.on(close), desistir pelo cliente não cancela a geração.',
+  achados:[['alto','Cliente aborta a resposta aos 30s (backend vai até 15min) — corta respostas longas'],['alto','Desistir/expirar pelo cliente não cancela o backend → custo invisível'],['baixo','Stop distribuído e persistência ao sair são bem-feitos (positivo)']],
+  acoes:[['P0','Corrigir o timeout de 30s do cliente'],['P0','Cancelar o backend quando o cliente desiste (timeout/aba fechada)']]},
+ {id:'voz-video',name:'Voz/áudio & Vídeo',etapa:'conversa',depth:'aud',
+  headline:'Fala e avatar existem — mas o agente fala com a voz errada.',
+  plain:'O agente pode responder em áudio (ElevenLabs) e ter avatar em vídeo (HeyGen), e a entrada por voz é transcrita. Dois problemas: o áudio ignora a voz configurada do agente e usa sempre a default; e os dados de emoção (voz/rosto) capturados não são apagados de verdade.',
+  impacto:['Experiência','Conformidade','Custo'],resumo:'TTS via ElevenLabs (máx 5000 chars, endpoint à parte, não no stream); voz do agente NÃO usada ("for now, use default voice"). Entrada por voz via Whisper (+ffmpeg 2x). Avatar HeyGen (active/standby, créditos, 1x/mês, async, fallback). Emoção voz+rosto capturada e retida (7/5/10d), mas cleanup é stub (deletedCount:0).',
+  achados:[['medio','TTS ignora a voz configurada do agente (usa default fixa)'],['medio','Limpeza de dados de emoção (voz/rosto) é stub → acumula (LGPD)'],['baixo','Áudio/vídeo fora do stream (sob demanda); custo externo tratado']],
+  acoes:[['P1','Usar a voz configurada do agente no TTS'],['P1','Implementar a purga real de dados de emoção']]},
+ {id:'mencao-grupos',name:'Menção a agente & Grupos',etapa:'conversa',depth:'aud',
+  headline:'Funcionam — mas furam a cota e multiplicam o custo.',
+  plain:'Dá pra mencionar outro agente (@) e ter conversas em grupo com vários agentes. Funciona, mas: mencionar um agente pula a checagem de cota, e num grupo todos os agentes respondem por padrão — multiplicando as chamadas de IA e o custo, com controle de limite fraco.',
+  impacto:['Custo','Experiência'],resumo:'mencionar_agente → ChatWithAgentCommand aninhado com isAutomationAction=true (pula cota + persistência); anti-recursão 1 nível; contexto isolado. Grupo: todos os membros respondem em paralelo (Promise.allSettled) salvo menção/privado → N× custo/mensagem, sem cota no handler. Run aninhado é síncrono (agrava o timeout de 30s).',
+  achados:[['medio','Menção pula a checagem de cota (run não contabilizado)'],['medio','Grupo: todos respondem por padrão (N× custo) sem cota'],['medio','Run de menção é síncrono → agrava o timeout de 30s']],
+  acoes:[['P1','Aplicar cota/custo em menção e grupo'],['P1','Limitar/observar o fan-out de grupo']]},
+ {id:'classif-historico',name:'Classificar & filtrar histórico',etapa:'conversa',depth:'aud',
+  headline:'Conversas não se auto-organizam: sem título nem categoria automáticos.',
+  plain:'Não há geração automática de título nem classificação da conversa — conversas (de grupo) nascem como "Nova Conversa". A busca no histórico é por texto nas mensagens + paginação, sem filtro por data, agente, categoria ou favoritos (só "fixar" em grupo).',
+  impacto:['Experiência'],resumo:'ListConversationsDto: page/limit/userId/search (texto nas mensagens). Sem auto-título/categoria no caminho do chat. Grupo tem title (default "Nova Conversa") + isPinned. Sem filtro por data/agente/tag/arquivado.',
+  achados:[['medio','Sem título/categoria automáticos (conversas viram "Nova Conversa")'],['medio','Filtro de histórico básico (só texto + paginação)'],['baixo','Fixar conversa existe (grupo)']],
+  acoes:[['P1','Auto-título (resumo da 1ª troca) + categorização'],['P1','Filtros de histórico: data, agente, tag, favorito']]},
+ {id:'funcoes-internas',name:'Funções internas do agente',etapa:'conversa',depth:'aud',
+  headline:'Fortes (imagem, documento, busca) — mas custo desigual e "opcionais demais".',
+  plain:'No chat o agente cria imagem (gpt-image), documentos (PDF/Word/Excel/PPT), busca a base de conhecimento (busca híbrida) e consulta a memória. São capazes, mas: a geração de imagem do agente pessoal não tem limite e as imagens ficam públicas; e memória/base só entram se a IA decidir chamá-las.',
+  impacto:['Experiência','Custo','Conformidade'],resumo:'gerar_imagem (gpt-image-1.5, tracking+custo, S3 público, limite só p/ org — pessoal sem cota, settings fail-open); criar_documento (pdf/docx/xlsx/pptx/md/html); buscar_base_de_conhecimento (híbrido vetor+BM25, 3 paráfrases); consultar_life_memory (busca semântica pgvector). Memória/base dependem do modelo decidir chamar.',
+  achados:[['medio','Imagem do agente pessoal sem limite mensal (cota só p/ org, fail-open)'],['medio','Memória/base só entram se o modelo decidir chamar a tool'],['baixo','Artefatos gerados (imagens) ficam públicos no S3']],
+  acoes:[['P1','Cota de imagem p/ agente pessoal (fail-closed)'],['P1','Garantir base/memória sem depender da decisão do modelo']]},
+ {id:'latencia',name:'Latência',etapa:'conversa',depth:'aud',
+  headline:'Demora a responder.',
+  plain:'Cada resposta passa por 4–5 etapas de IA em sequência antes de aparecer — o que infla o tempo até a primeira palavra.',
+  impacto:['Experiência'],resumo:'Encadeia filtro + decisão + busca (reescrita/reordenação) + redação. Tempo até o 1º token inflado por etapas em série.',
+  achados:[['alto','4–5 chamadas de IA em sequência por resposta'],['medio','Plano B de IA frágil: um nível só, detecção por texto de erro'],['medio','Verificação de cota síncrona no início puxa a latência (um serviço espera o outro)'],['baixo','Loop do agente permite até 25 iterações (teto alto)']],
+  acoes:[['P0','Tirar o filtro de contexto por IA do caminho crítico'],['P1','Fallback de 2–3 níveis; medir tempo por etapa'],['P1','Checar cota em paralelo (ou cache curto); monitorar/reduzir o teto de iterações']]},
+ {id:'memoria',name:'Memória',etapa:'conversa',depth:'aud',
+  headline:'O agente “esquece”: a memória de longo prazo quase não é usada.',
+  plain:'A conversa é cortada após ~30 mensagens sem resumo, e a memória de longo prazo praticamente não é acionada durante o chat — então o agente não lembra do que foi dito antes.',
+  impacto:['Experiência'],resumo:'Life Memory não disparada durante o chat (0 entradas após 20 msgs no teste). Histórico cortado sem resumo automático. Longo prazo depende de a IA decidir consultar.',
+  achados:[['alto','Memória de longo prazo não disparada durante o chat'],['alto','Histórico cortado em ~30 msgs sem resumo automático']],
+  acoes:[['P0','Disparar e injetar a memória de longo prazo no chat'],['P1','Resumo automático antes do corte de histórico']]},
+ {id:'tratamento',name:'Tratamento de mensagem',etapa:'conversa',depth:'aud',
+  headline:'Erros aparecem genéricos, apesar de existir um tradutor ótimo.',
+  plain:'Existe um tradutor de erros claro e em 3 idiomas — mas o caminho de chat mais comum não o usa, então o usuário vê “algo deu errado”.',
+  impacto:['Experiência'],resumo:'Tradutor de erros (acionável, pt/en/es) ignorado no caminho síncrono (toast chat.error.stream_failed com message crua). Dois caminhos de stream: o hook novo (sse-client) consome token/tool/done/error e IGNORA status/chunk; e não exibe a ferramenta em execução (não conecta onToolCall/onToolResult).',
+  achados:[['alto','Caminho síncrono usa mensagem genérica para todo erro'],['medio','Dois caminhos de stream com vocabulários diferentes (status/chunk ignorados)'],['medio','Ferramenta em execução invisível no caminho novo'],['baixo','Mistura de idiomas nas mensagens (algumas em inglês num produto pt-BR)']],
+  acoes:[['P0','Conectar o chat ao tradutor de erros já existente'],['P1','Unificar os caminhos de stream e exibir a ferramenta em uso']]},
+ {id:'sair-voltar',name:'Sair da tela durante a resposta',etapa:'conversa',depth:'aud',
+  headline:'Trocar de tela cancela a resposta — o sistema trata navegação como "Stop".',
+  plain:'Quando você está conversando e muda de tela, o chat envia um "cancelar" ao servidor (no código de limpeza ao sair). Navegar é interpretado como pausa: o agente para de responder e, ao voltar, aparece "resposta interrompida". A resposta que você esperava se perde — exatamente o que você relatou.',
+  impacto:['Experiência'],resumo:'ChatInterface: cleanup de unmount faz socket.emit("cancel_stream") → backend cancela (persistência cancel-aware pode não salvar). Comentário diz manter chunks locais, mas o servidor é cancelado. Bug confessado do backend: marcador de stream ativo dura 15min após o término → frontend hidrata "Processando..." e auto-cancela em 10s (pode matar stream legítimo). SSE preso ao componente, não retomável.',
+  achados:[['alto','Navegar para outra tela cancela a resposta em andamento (cancel_stream no unmount)'],['medio','Marcador de stream ativo persiste 15min no backend (bug) → auto-cancel de 10s por palpite'],['medio','Stream não é retomável ao voltar (preso ao componente)']],
+  acoes:[['P0','Não cancelar no unmount; só no Stop explícito — deixar o backend terminar/persistir'],['P1','Corrigir TTL do marcador; tornar o stream retomável']]},
+ {id:'volume-dados',name:'Volume de dados & contexto',etapa:'conversa',depth:'aud',
+  headline:'O motor trata bem o volume — mas você não vê quanto do seu dado foi usado.',
+  plain:'A boa notícia: anexo grande não é cortado às cegas (vira resumo + indexado), há compactação de conversa e a base de conhecimento busca vários trechos. O problema (sua dor): na hora de responder, nada mostra "usei N de M mensagens", "seu documento foi resumido" ou "busquei K trechos" — e alguns cortes acontecem em silêncio.',
+  impacto:['Experiência'],resumo:'Orçamento dinâmico por modelo (janela − system − histórico − saída) com resumo+indexação de anexos grandes. Histórico: 30 msgs; compactação separada/por gatilho. Conhecimento top-K=20 (vetor+BM25, 3 paráfrases). Tool result cortado em 40k chars (2k no cache). Existe gerenciador de contexto (tokens/threads) mas em tela separada e endpoint legado.',
+  achados:[['medio','Sem visibilidade no chat de quanto do histórico/documento/base foi usado vs truncado'],['medio','Histórico de 30 msgs; compactação é mecanismo à parte — contexto além disso some sem aviso'],['medio','Truncamentos silenciosos (ferramenta 40k chars; cache 2k)'],['baixo','Top-K fixo (20) e sem noção de "quanto cabe" antes de degradar']],
+  acoes:[['P1','Indicadores no chat: documento resumido / K trechos / medidor de contexto'],['P1','Avisar em truncamentos + garantir compactação antes do corte de 30']]},
+ {id:'multiplas',name:'Múltiplas conversas ativas',etapa:'conversa',depth:'aud',
+  headline:'Cada conversa tem seu stream isolado — só falta a tela com abas.',
+  plain:'O estado de streaming é isolado por conversa: dá pra começar uma resposta numa conversa, ir para outra, e a primeira continua gerando no seu próprio slot. Só falta o layout de abas para o usuário navegar entre elas com fluidez.',
+  impacto:['Experiência'],resumo:'streamStore (zustand) com um slot por convId; eventos de uma conversa nunca tocam outra (com guarda anti-clobber de stream sucessor). Backend persiste por conversa. Falta UI de abas (relatório de Memória).',
+  achados:[['baixo','Estado de stream isolado por conversa (positivo, bem-feito)'],['medio','Frontend sem layout de abas para navegar entre conversas ativas']],
+  acoes:[['P1','Interface de abas para múltiplas conversas']]},
+ // 6 Relatório
+ {id:'relatorio-analytics',name:'Relatório — Analytics (PDF)',etapa:'relatorio',depth:'aud',
+  headline:'O relatório de analytics em PDF traz dados INVENTADOS.',
+  plain:'Existe um endpoint que gera um PDF de analytics (uso, custos, performance, receita) com cara profissional — mas todos os números são fixos/placeholder no código, não consultam dados reais. Entregar isso como relatório é enganoso.',
+  impacto:['Estabilidade','Conformidade'],resumo:'POST /reporting/generate → GenerateAnalyticsReportHandler.buildReportSections devolve seções com números HARDCODED (1250 chamadas, custo 1234.56, receita 5678.90...). Endpoint exposto e alcançável. (Os relatórios admin/cost-analytics por query usam dados reais — caminho diferente.)',
+  achados:[['alto','PDF de analytics gerado com dados 100% fictícios (hardcoded)'],['medio','Dois caminhos de relatório (agente × analytics) confundem']],
+  acoes:[['P0','Substituir dados hardcoded por consultas reais (ou desativar até ter)'],['P1','Unificar os caminhos de relatório']]},
+ {id:'relatorio-agente',name:'Relatório — do agente',etapa:'relatorio',depth:'aud',
+  headline:'Gerenciar relatórios funciona — mas o conteúdo é o que o agente escreve.',
+  plain:'O agente cria, lista, edita, favorita e exporta relatórios em PDF, com categorias e templates. O CRUD é sólido. O risco: o conteúdo (inclusive números) é redigido pelo agente, sem garantia de que veio de uma fonte real — pode alucinar.',
+  impacto:['Experiência'],resumo:'tool gerenciar_relatorios → CRUD de user_reports (listar/visualizar/criar/atualizar/deletar/toggle_favorite/template), PDF via @afl/shared-pdf, categorias, soft-delete. Conteúdo gerado pelo agente sem ancoragem obrigatória em dados reais.',
+  achados:[['medio','Conteúdo (números) escrito pelo agente sem garantia de fonte'],['baixo','CRUD/PDF/categorias/templates bem-feitos (positivo)']],
+  acoes:[['P1','Ancorar relatório do agente em dados reais (tools/fontes) + indicar origem']]},
+ // 7 Automação
+ {id:'automacao',name:'Automação',etapa:'automacao',depth:'aud',
+  headline:'Promete filtro de condições e economia ("só roda se mudou"), mas no código a maioria das condições e a detecção de mudança são STUBS — e dispara em dobro.',
+  plain:'Automações: o agente analisa uma fonte numa frequência e, se as condições baterem, age (WhatsApp/notificação/relatório). PORÉM, rastreando o código: a maioria dos tipos de condição é stub que SEMPRE passa, a detecção de "só roda se mudou" não funciona (sempre assume que mudou) e o agendador roda em cada réplica sem trava. Resultado: as condições muitas vezes não filtram, a IA gasta todo ciclo, e a automação pode disparar (e custar) várias vezes.',
+  impacto:['Custo','Estabilidade'],resumo:'Agendador node-cron por réplica (sem leader/lock); caminho por-frequência SEM dedup, só o custom tem guard de 60s não-atômico. Fluxo: fetch → detecção de mudança (STUB: hasChanged() sempre true; handler vivo consolidated nem chama) → condições (só custom/always_run avaliam; threshold/trend/anomaly/text_content/time_based/data_change são stubs passed:true) → análise (delega ao agente só se UUID/pessoal; organizacional cai em LLM genérico) → ações (8 tipos; send_agent_message descarta a resposta; update_data sucesso otimista). Freio de emergência; rate limiting; respeita horário de descanso.',
+  achados:[['alto','A maioria dos tipos de condição (threshold/trend/anomaly/text_content/time_based/data_change) são STUBS que sempre retornam passed:true — o filtro é ignorado e a automação dispara sempre'],['alto','Detecção de mudança é STUB: hasChanged() sempre retorna true e o handler vivo nem chama — o "só gasta IA se mudou" NÃO existe; roda IA todo ciclo'],['medio','node-cron por réplica sem trava; caminho por-frequência sem dedup (só o custom tem guard de 60s não-atômico) → execução/custo N× (AC-64)'],['medio','Custo escala com automações × frequência, sem teto por automação (AC-65)'],['medio','Automação IGNORA o portão de fonte por agente que existe no chat: aceita qualquer fonte do usuário, sem checar associação ao agente'],['medio','E/OU existe no backend mas o front trava em AND (conditionsLogic hardcoded, linha 247) — OU inacessível; e falta associar ação a condição, agrupamento aninhado e disparo parcial'],['medio','Ação send_agent_message dispara o agente-alvo mas DESCARTA a resposta — não entrega nem encadeia; nem propaga artefatos'],['medio','Ação update_data reporta sucesso sem verificar se o dado foi realmente atualizado — sucesso otimista'],['medio','Agente organizacional (ID numérico) não é usado na análise — cai em LLM genérico'],['baixo','Ação execute_integration só funciona para MCP/API custom; integrações OAuth (Google/MS) caem em erro "sem URL MCP"'],['baixo','WhatsApp em modo agendado não implementado — envia na hora']],
+  acoes:[['P0','Implementar a avaliação real de cada tipo de condição — ou removê-los da UI até prontos'],['P0','Trava de instância única / idempotência no agendador (AC-64)'],['P1','Detecção de mudança real (hash persistido; pular se igual)'],['P1','Teto de custo por automação (AC-65)'],['P1','Portão de fonte por agente coerente entre chat e automação'],['P1','Condição→ação: associar ação a condição, agrupamento aninhado e disparo parcial'],['P1','Entregar/encadear a resposta de send_agent_message — ou descontinuar'],['P1','update_data: verificar a escrita antes de reportar sucesso'],['P1','Usar o agente organizacional na análise (ou explicitar não-suporte)']]},
+ // 3 Integração — módulo de conexão (config)
+ {id:'mod-oauth',name:'Conexão OAuth (módulo)',etapa:'integracao',depth:'aud',
+  headline:'Conectar contas é maduro — mas o "crachá" da volta vai na URL.',
+  plain:'Conectar Google/Microsoft/Jira/Notion/Slack e cia. funciona bem: o segredo guardado é criptografado, o login se renova e dá pra ter várias contas. Pontos a endurecer: o "comprovante" da conexão (state) não é assinado e, no login social, o token volta dentro do endereço (URL) — pode vazar.',
+  impacto:['Segurança'],resumo:'UnifiedOAuthService + 10 provedores. Tokens cifrados em oauth_provider_tokens, refresh+re-encrypt, multi-conta, anti-open-redirect. Mas: state base64 não assinado (nonce não conferido no popup de integração); JWT+refresh na query string do redirect de login; frontend URL derivada de x-forwarded-host.',
+  achados:[['medio','state do OAuth não assinado / nonce não verificado (CSRF/confusão de conta)'],['medio','JWT e refresh token trafegam na URL no login OAuth'],['medio','URL de redirect derivada de x-forwarded-host (se não fixado no proxy)']],
+  acoes:[['P1','Assinar o state (HMAC) + verificar nonce server-side'],['P1','Tirar tokens da URL (cookie httpOnly/POST); fixar x-forwarded-host']]},
+ {id:'mod-mcp',name:'MCP & API custom (módulo)',etapa:'integracao',depth:'aud',
+  headline:'Guarda o segredo em texto puro e aceita qualquer endereço (SSRF).',
+  plain:'Para servidores MCP e APIs customizadas, dois problemas: o token/chave é salvo SEM criptografia (ao contrário do OAuth), e o endereço informado não é validado — o servidor pode ser levado a chamar endereços internos da própria infraestrutura.',
+  impacto:['Segurança'],resumo:'MCP (sistemas_mcp) e custom_api guardam authValue/headers em texto puro no user_integrations.credentials (JSONB). testConnection faz request ao mcpUrl informado, sem allowlist nem bloqueio de IP interno/metadata (SSRF). Positivo: segredo não é retornado na API.',
+  achados:[['alto','Credenciais de MCP/API custom guardadas em texto puro (OAuth é criptografado)'],['alto','SSRF: mcpUrl arbitrário, sem bloqueio de endereços internos'],['medio','Armazenamento de credencial fragmentado (3 tabelas) dificulta revogação/eliminação']],
+  acoes:[['P0','Criptografar credenciais de MCP/custom em repouso'],['P0','Anti-SSRF no mcpUrl (allowlist + bloquear IP interno/metadata)']]},
+ // 8 Inbox
+ {id:'inbox-seg',name:'Inbox — Segurança',etapa:'inbox',depth:'aud',
+  headline:'Dá para ler a inbox de outro usuário e injetar notificação falsa.',
+  plain:'A caixa de entrada (notificações dos agentes) tem duas brechas sérias: passando ?userId= dá para ver/ler a inbox de outra pessoa; e o endpoint que cria notificação é público — qualquer um poderia injetar uma mensagem falsa (com anexo) na inbox de qualquer usuário.',
+  impacto:['Segurança','Conformidade'],resumo:'IDOR: const userId = queryUserId || jwtUserId (sem checar igualdade) em storage/messages/unread-count/mark-read. Create de mensagem é @Public() com userId no body ("service-to-service") — se acessível, permite spoofing/phishing com anexos.',
+  achados:[['alto','IDOR: ?userId substitui o JWT → ler inbox de outro usuário'],['alto','Create de notificação é público (injeção de mensagem falsa em qualquer usuário)']],
+  acoes:[['P0','Corrigir IDOR: usar só o userId do JWT'],['P0','Proteger o create (auth interno/rede; não @Public)']]},
+ {id:'inbox-func',name:'Inbox — Produto',etapa:'inbox',depth:'aud',
+  headline:'A cota não é aplicada e a "Necessidade de Ação" não existe no código.',
+  plain:'A base é boa (tipos, prioridade, anexos, espelhamento WhatsApp, termômetro de armazenamento). Mas a cota é só um termômetro de leitura — não bloqueia na criação; e a feature-bandeira da especificação ("Necessidade de Ação", pedido de decisão acionável) não está implementada.',
+  impacto:['Experiência','Custo'],resumo:'Cota de armazenamento exibida (get-inbox-storage) mas NÃO aplicada no create → crescimento ilimitado. messageType sem action_required (só report/alert/insight/task/system/invitation), sem estado pendente→resolvida. Default de cota diverge (200MB código × 100MB spec).',
+  achados:[['medio','Cota de armazenamento não é aplicada na criação (só termômetro)'],['medio','Necessidade de Ação (action_required) da spec não implementada'],['baixo','Default de cota diverge (200 código × 100 spec); spec parcialmente implementada']],
+  acoes:[['P1','Aplicar a cota na criação'],['P1','Implementar Necessidade de Ação (action_required)']]},
+ // Transversais (bastidores)
+ {id:'dependencias',name:'Relacionamento & Exclusão de registros',etapa:'tx',depth:'aud',
+  headline:'Apagar não respeita todas as amarrações — sobram órfãos.',
+  plain:'As entidades se ligam em cadeia (usuário → agentes → fontes de dados → integrações; agentes compartilhados; automações). Dentro de um serviço, apagar em cascata funciona. Mas entre serviços não há FK: apagar um agente não verifica nem limpa as automações/conexões em outro serviço, e desconectar uma integração deixa as fontes órfãs apontando para algo morto.',
+  impacto:['Estabilidade','Conformidade'],resumo:'FK cascade dentro do schema agents (documentos/permissões/shared_agents). Cross-service por coluna sem FK (agent_data_connections.agentId, user_data_sources.integration_uuid). delete-agent: verifyNoDependencies é TODO vazio; cascata cross-service por AgentDeletedEvent fire-and-forget. disconnect-integration NÃO toca nas fontes dependentes → órfãs. Limpeza de órfãos é oportunística (Notion só limpa ao tomar 404).',
+  achados:[['alto','Excluir agente não verifica dependências (TODO) → automações/conexões órfãs'],['alto','Desconectar integração não limpa as fontes dependentes (órfãs, falham em silêncio)'],['alto','Google/Microsoft/MCP: desconectar+reconectar NÃO restaura as fontes (id muda; sem fallback). Jira/Notion/Slack toleram (resolvem por provedor)'],['medio','Sem integridade referencial cross-service; eliminação completa (LGPD) manual e espalhada']],
+  acoes:[['P0','Implementar verifyNoDependencies + cascata cross-service confiável'],['P1','Desconexão de integração limpando fontes; rotina de eliminação completa (LGPD)']]},
+ {id:'governanca',name:'Governança',etapa:'tx',depth:'aud',
+  headline:'Deploys quebram coisas que ninguém mexeu; falta rede de proteção automática.',
+  plain:'Cada serviço guarda sua própria cópia do desenho do banco; mudar num lugar quebra outro na publicação. E os testes não rodam sozinhos antes de publicar.',
+  impacto:['Estabilidade','Segurança','Conformidade'],resumo:'Banco compartilhado com schema em cópias manuais ("monolito distribuído"). Migrations sem compatibilidade. Testes sem gate de CI. Deploy de tag "latest"; doc defasada.',
+  achados:[['alto','Estrutura do banco duplicada/compartilhada — raiz dos deploys que quebram'],['alto','Migrations sem regra de compatibilidade'],['alto','Testes sem verificação automática a cada mudança (CI)'],['medio','Deploy de "latest"; documentação operacional defasada'],['medio','Fronteiras de serviço sobrepostas (o chat vive em 2 serviços) — mexer num lado quebra o outro'],['baixo','Documentação com heranças do app antigo (Replit) e referências quebradas']],
+  acoes:[['P0','Migrations compatíveis + fixar commit + CI a cada mudança'],['Estrutural','Consolidar schema em fonte única; separar dados por serviço'],['P2','Definir e documentar o dono das responsabilidades sobrepostas (começar por chat)'],['P2','Limpeza da documentação: remover heranças do Replit e corrigir referências quebradas']]},
+ {id:'finops',name:'FinOps & Resiliência',etapa:'tx',depth:'aud',
+  headline:'Custo que não aparece e dados que somem sem aviso.',
+  plain:'O motor de consumo de IA é bem feito (checagem atômica antes de cada chamada, auto-bloqueio ao atingir o limite, alerta a 80% em tempo real). MAS: tudo é fail-open (na primeira falha vira ilimitado), parte dos custos (resumo de documentos/auxiliares) escapa da conta, e três limites do plano (automações, conversas, documentos) não são barrados.',
+  impacto:['Custo','Estabilidade'],resumo:'Consumo (llm-quota.service): checkQuota atômico em 3 níveis (API key→org→user) + limites do plano; recordUsage; auto-block a 100%; alerta a 80% via RabbitMQ; reset diário/mensal. Furos: fail-open em checkQuota/checkPlanQuotaLimits/getActualMonthCost; resumo de documentos BYPASSA a cota (token budget subconta); recordUsage non-blocking. Recursos contáveis (quota-enforcement.guard): fail-open; max_automations/active_conversations/documents_per_agent não enforçados; alerta 6h só-org; storage alert é TODO.',
+  achados:[['alto','Custo das chamadas auxiliares de IA não atribuído ao cliente'],['alto','Cota "fail-open" (checkQuota/checkPlanQuotaLimits/getActualMonthCost: erro → libera; sob falha vira ilimitado)'],['alto','Custos de resumo de documentos (e auxiliares) BYPASSAM o checkQuota/recordUsage → orçamento de tokens subconta'],['alto','Sem idempotência (duplicação) + operações que silenciam erros'],['medio','Limites de plano sem enforcement: max_automations, max_active_conversations, max_documents_per_agent (lidos, não barrados)'],['medio','Erro no caminho assíncrono (WhatsApp) também usa mensagem genérica; mensagem-veneno sem contagem de tentativas; dependência de RabbitMQ/Redis únicos'],['baixo','Alerta de recursos contáveis: storage nunca alerta (TODO no scheduler); guard fail-open (erro→conta 0); alerta 6h só p/ org']],
+  acoes:[['P0','Atribuir custo auxiliar; rever cota fail-open (incluir resumo de docs/auxiliares na cota)'],['P1','Idempotência por mensagem; fila com retentativa'],['P1','Limites de plano com enforcement: automations/conversas/docs'],['P2','Fechar lacunas de alerta contável: storage, org+pessoal, fail-closed']]},
+ {id:'seguranca',name:'Segurança',etapa:'tx',depth:'aud',
+  headline:'Um agente que lê conteúdo de fora e age pode ser manipulado.',
+  plain:'A proteção tradicional (senha, criptografia) está boa. O risco novo é alguém esconder instruções num conteúdo que o agente lê e fazê-lo executar ações indevidas.',
+  impacto:['Segurança'],resumo:'Perímetro clássico bem protegido. Superfície de agentes é a lacuna: injeção de prompt + ferramentas, SQL fraco, SSRF.',
+  achados:[['alto','Injeção de prompt + execução de ferramentas'],['alto','Filtro de SQL fraco na consulta a banco'],['alto','SSRF nas ferramentas de web'],['medio','Isolamento entre organizações só na camada de aplicação (sem Row-Level Security) — um WHERE org_id esquecido vaza dados cross-org'],['medio','Arquivo .env.stage versionado no repositório (hoje só template, mas facilita commitar segredo real)']],
+  acoes:[['P0','Varredura de vulnerabilidades de dependências'],['P1','Confirmar ações sensíveis + menor privilégio; SQL só-leitura; anti-SSRF'],['P1','Row-Level Security no Postgres + testes de isolamento entre organizações'],['P1','Remover .env do versionamento + secret scanning no pipeline']]},
+ {id:'lgpd',name:'Privacidade & LGPD',etapa:'tx',depth:'aud',
+  headline:'Apagar os dados de uma pessoa é incompleto, e o CPF fica visível.',
+  plain:'O “direito ao esquecimento” depende de apagar manualmente em vários lugares — e o banco compartilhado dificulta. Além disso, o CPF é guardado sem proteção.',
+  impacto:['Conformidade'],resumo:'Criptografia, auditoria e retenção de WhatsApp são positivos. Eliminação incompleta; CPF em texto puro. (Conformidade exige revisão jurídica.)',
+  achados:[['alto','Eliminação de dados incompleta (banco compartilhado)'],['alto','CPF em texto puro'],['medio','Retenção indefinida de chat web, memória e embeddings (só WhatsApp tem 30 dias)'],['medio','Compartilhamento com terceiros (LLMs/integrações) sem transparência/DPA visível'],['medio','Sem fluxo self-service do titular (exclusão/portabilidade)']],
+  acoes:[['P0','Criptografar/tokenizar o CPF'],['Estrutural','Rotina de eliminação completa de dados do usuário'],['P1','Políticas de retenção para todos os dados (não só WhatsApp)'],['P1','Contratos (DPA) + transparência sobre o compartilhamento com terceiros'],['P1','Canal de autoexclusão e portabilidade ao titular']]},
+ {id:'pagamentos',name:'Pagamentos & Integridade financeira',etapa:'tx',depth:'aud',
+  headline:'Dá para liberar produto pago sem pagar — a proteção existe, mas está desligada.',
+  plain:'O webhook que confirma pagamentos da Eduzz aceita eventos sem conferir a assinatura: o porteiro existe no código, mas não foi ligado. Qualquer pessoa pode forjar um pagamento aprovado e ganhar acesso, ou forjar estorno. Soma-se a isso uma injeção de SQL no fluxo de ofertas e a baixíssima cobertura de teste do módulo.',
+  impacto:['Segurança','Custo','Conformidade'],resumo:'EduzzWebhookGuard (HMAC-SHA256 + timingSafeEqual) implementado mas órfão; handler com validação comentada; sql.raw com valor do usuário em update-knowledge-offer; cobertura ~2,5% e zero gate de CI no pagamento. Fonte: Due Diligence técnica do CTO (jun/2026).',
+  achados:[['critico','Webhook de pagamento Eduzz forjável (CVSS 9.3): o guard HMAC existe mas nunca é aplicado e a validação está comentada — dá para forjar "transaction.approved" e liberar produto pago, ou forjar estorno'],['alto','SQL injection em update-knowledge-offer: price e automationId são interpolados em sql.raw sem bind — um produtor injeta SQL no banco compartilhado'],['alto','Módulo de pagamento com ~2,5% de cobertura de teste e sem gate de CI']],
+  acoes:[['P0','Conectar o EduzzWebhookGuard à rota (HMAC sobre o raw body) + tornar o segredo obrigatório em produção'],['P0','Trocar sql.raw por bind parametrizado (Drizzle) em update-knowledge-offer'],['P1','Gate de CI (testes + lint + build por PR) + cobertura mínima, priorizando o pagamento']]},
+ {id:'auth-config',name:'Autenticação & Configuração de perímetro',etapa:'tx',depth:'aud',
+  headline:'Defesas escritas, mas desligadas: login sem freio, segredo padrão no código, CORS aberto.',
+  plain:'O perímetro tem peças prontas que não foram conectadas: o limite de tentativas de login não está ligado (dá para tentar senha sem parar), o token usa um segredo padrão embutido no código, o CORS aceita qualquer origem e falta a política de segurança de conteúdo (CSP) em produção.',
+  impacto:['Segurança'],resumo:'ThrottlerModule configurado sem ThrottlerGuard (brute force confirmado ao vivo: 35 logins inválidos, 0 bloqueios); JWT_SECRET com fallback fixo no código em 3 serviços + verify sem allowlist de algoritmo; CORS default "*" + credentials; CSP ausente em produção; AgentOwnerGuard stub (return true); @nestjs/core vulnerável. Fonte: Due Diligence do CTO.',
+  achados:[['alto','Rate limit de login configurado, mas o ThrottlerGuard nunca é registrado — brute force sem limite (35 logins inválidos = 0 bloqueios, confirmado ao vivo)'],['alto','JWT com secret de fallback fixo no código em 3 serviços + verify sem allowlist de algoritmo (forja de token admin / alg confusion)'],['alto','CORS com default "*" e credentials sempre ligado em 2 serviços'],['alto','CSP (Content-Security-Policy) ausente em produção'],['medio','AgentOwnerGuard é um stub (return true) — IDOR latente'],['medio','@nestjs/core com vulnerabilidade conhecida (Alta + Moderada); patch disponível']],
+  acoes:[['P0','Registrar o ThrottlerGuard (antes do JWT) + @Throttle no /login'],['P0','Remover os fallbacks de JWT_SECRET (falhar o boot se ausente) e fixar o algoritmo'],['P0','CORS com allowlist explícita de origens (sem "*")'],['P0','Adicionar CSP + HSTS na resposta de produção'],['P1','Implementar o AgentOwnerGuard de verdade (checar ownership)'],['P1','Atualizar @nestjs/core + Dependabot/Renovate + pnpm audit no CI']]},
+ {id:'llm-resiliencia',name:'Seleção de modelo & Resiliência de provedor',etapa:'tx',depth:'aud',
+  headline:'Reage aos limites dos provedores — mas não onde mais dói: o chat ao vivo.',
+  plain:'Há retry e troca de provedor bem-feitos, porém só no caminho de fundo. O chat interativo (streaming) não tenta de novo quando o provedor responde "muitas requisições" (429) — o erro vai direto para o usuário. E não há um freio global por tokens-por-minuto, então um pico dispara tudo de uma vez.',
+  impacto:['Experiência','Custo','Estabilidade'],resumo:'Retry + jitter + Retry-After corretos no não-stream (paridade big-tech); streaming sem retry a 429; a cota é de billing (plano), não de rate-limit de provedor; sem token-bucket global RPM/TPM; Bedrock sem jitter; embeddings em lote por contagem (2048 textos); gatilho de entrada grande em 5k tokens; troca por capacidade pega o mais barato. Anthropic só via Bedrock (não distingue 429 de overload). Fonte: aprofundamento de rate-limits do CTO.',
+  achados:[['alto','Fallback de modelo de nível único, sem último recurso garantido e com disparo por texto do erro (frágil)'],['alto','Caminho de streaming (chat ao vivo) sem retry/backoff a 429 do provedor — erro na cara do usuário sob pico'],['alto','Sem limitador global de RPM/TPM por provedor (a cota é de billing, não de rate-limit) — storm de 429 sob carga'],['medio','Backoff do Bedrock sem jitter (re-tentativas em lockstep que recolidem)'],['medio','Batching de embeddings por contagem (2048 textos), não por tokens — estoura o TPM em lote de documentos longos'],['medio','Gatilho de entrada grande em 5k tokens força o modelo econômico cedo demais (queda de qualidade)'],['medio','Troca por capacidade escolhe o modelo mais barato silenciosamente'],['baixo','Não lê headers de quota (x-ratelimit-remaining) para frear antes do 429; provedor assumido como openai para modelo do agente']],
+  acoes:[['P0','Cadeia de fallback (principal → reserva → econômico garantido) + detecção por código/categoria de erro'],['P0','Levar o retry/backoff + Retry-After ao caminho de streaming (proteger o chat ao vivo)'],['P1','Limitador global por provedor/tier (token-bucket RPM + TPM)'],['P1','Jitter no backoff do Bedrock; batching de embeddings por tokens; ler headers de quota'],['P2','Revisar/configurar o limite de entrada grande; considerar qualidade (não só preço) na troca por capacidade']]},
+ {id:'escalabilidade',name:'Escalabilidade do banco',etapa:'tx',depth:'aud',
+  headline:'Aguenta pouca carga: pool sem ajuste e busca de conhecimento sem índice.',
+  plain:'O acesso ao banco usa configurações padrão (poucas conexões) e a busca na base de conhecimento não tem um índice especializado — funciona com pouco dado, mas degrada conforme a base e o tráfego crescem.',
+  impacto:['Estabilidade','Experiência'],resumo:'new Pool sem opções (max/timeout/statement_timeout) com várias réplicas no mesmo banco; migrations sem índice vetorial (ivfflat/hnsw) para embeddings — a busca semântica vira varredura sequencial. Fonte: Pente-Fino.',
+  achados:[['alto','Pool de conexões sem limite/timeout (padrão da biblioteca) — risco de esgotar conexões com várias réplicas no mesmo banco'],['alto','Sem índice vetorial dedicado (ivfflat/hnsw) — a busca semântica vira varredura e fica lenta conforme a base cresce']],
+  acoes:[['P1','Configurar pool (max, timeout, statement_timeout) por serviço'],['P1','Criar índice vetorial (ivfflat/hnsw) na tabela de embeddings; revisar índices das consultas quentes']]},
+ {id:'evals',name:'Qualidade & Avaliação do agente',etapa:'tx',depth:'aud',
+  headline:'Não há como saber se uma mudança melhora ou piora as respostas.',
+  plain:'Existe um indicador de prontidão do agente (se está configurado, tem base, etc.), mas nada mede se as respostas estão corretas ou se ele inventa. Sem isso, toda melhoria de prompt ou de modelo é feita no escuro.',
+  impacto:['Experiência'],resumo:'agent-quality calcula um score de PRONTIDÃO (completude da configuração), não de ACERTO/alucinação; não há golden dataset/harness de avaliação. Fonte: Pente-Fino.',
+  achados:[['medio','Só existe score de prontidão (configuração), não de acerto/alucinação das respostas'],['medio','Sem conjunto de avaliação (golden dataset) para medir o efeito de mudanças de prompt/modelo']],
+  acoes:[['P1','Construir um harness de avaliação (golden dataset) por domínio, rodando a cada mudança relevante']]},
+];
+
+// ===== INTEGRAÇÕES (etapa: integracao) =====
+const INTEGS=[
+ {id:'sheets',name:'Google Sheets',modulo:'Google',status:'parc',headline:'Lê e anota, mas não corrige um registro nem desfaz.',plain:'Lê a planilha e adiciona linhas, mas não atualiza um registro existente, não apaga o que errou — e pode escrever na coluna errada.',impacto:['Experiência'],arch:'Reimplementa o googleapis direto (login não se renova).',mat:{Leitura:4,Escrita:2,Auth:2,Cobertura:2},faz:['Ler dados','Escrever 1 célula','Adicionar 1 linha'],gaps:['Atualizar por chave','Apagar/limpar','Lote','Criar planilha/aba'],riscos:[['alto','Login não se renova: falha no meio'],['alto','Só arquivos re-selecionados pelo seletor'],['alto','Pode escrever na coluna errada']],p0:['Atualizar por chave','Renovação de login']},
+ {id:'gcal',name:'Google Calendar',modulo:'Google',status:'parc',headline:'Marca eventos, mas não sabe quando você está livre.',plain:'Cria e edita compromissos, mas não consulta sua disponibilidade — então não agenda evitando conflitos.',impacto:['Experiência'],arch:'Passa pelo workflow-service (login renovado).',mat:{Leitura:4,Escrita:3,Auth:4,Cobertura:2},faz:['Ler/criar/atualizar/excluir evento'],gaps:['Disponibilidade','Recorrência','Link de reunião','Escolher calendário'],riscos:[['alto','Sem disponibilidade: não é assistente de agenda'],['medio','Horário pode sair deslocado (fuso UTC)']],p0:['Consulta de disponibilidade']},
+ {id:'gmail',name:'Gmail',modulo:'Google',status:'parc',headline:'Lê e envia, mas tropeça em anexos e formatação.',plain:'Lê e manda emails de texto, mas não anexa arquivos, não responde na conversa, e o envio em HTML descarta a formatação.',impacto:['Experiência'],arch:'Passa pelo workflow-service (login renovado).',mat:{Leitura:3,Escrita:3,Auth:4,Cobertura:3},faz:['Ler/buscar','Enviar texto','Organizar por marcadores'],gaps:['Anexar','Responder na conversa','Rascunho'],riscos:[['alto','Organizar marcadores deve falhar (permissão)'],['alto','Lê só o trecho do email (mensagens com partes)'],['alto','Envio em HTML descarta a formatação']],p0:['Corrigir HTML do envio']},
+ {id:'gdrive',name:'Google Drive & Docs',modulo:'Google',status:'parc',headline:'Aponta o arquivo, mas não lê o conteúdo nem salva nada.',plain:'Lista arquivos do Drive, mas não lê o texto de um documento, não baixa, não exporta e não guarda no Drive o que o agente gera.',impacto:['Experiência'],arch:'Mista; ler planilha e escrever em Doc reimplementam sem renovar login.',mat:{Leitura:2,Escrita:2,Auth:3,Cobertura:2},faz:['Listar/buscar','Adicionar texto ao fim de um Doc'],gaps:['Ler texto de Doc','Baixar/exportar','Salvar no Drive'],riscos:[['alto','Não lê o texto de um documento (só o link)'],['alto','Escopo estreito: só arquivos selecionados']],p0:['Leitura de Doc','Salvar no Drive']},
+ {id:'omail',name:'Outlook Mail',modulo:'Microsoft',status:'op',headline:'Completo, mas com o mesmo bug de formatação.',plain:'Lê, envia e apaga emails (até em lote). Falta anexar e responder na conversa; e o envio em HTML descarta a formatação.',impacto:['Experiência'],arch:'Passa pelo workflow-service → Graph (login renovado).',mat:{Leitura:4,Escrita:3,Auth:4,Cobertura:3},faz:['Ler/buscar','Enviar (com prioridade)','Excluir em lote'],gaps:['Anexar','Marcar lido/mover','Responder na conversa'],riscos:[['alto','Envio em HTML descarta a formatação'],['medio','Sem anexo/markread/move/reply']],p0:['Corrigir HTML do envio','Anexos']},
+ {id:'ocal',name:'Outlook Calendar',modulo:'Microsoft',status:'op',headline:'O calendário mais completo — falta só a disponibilidade.',plain:'Lista calendários, cria reunião com link do Teams e lembrete. Só não consulta sua disponibilidade nem cria recorrentes.',impacto:['Experiência'],arch:'Passa pelo workflow-service → Graph (login renovado).',mat:{Leitura:4,Escrita:4,Auth:4,Cobertura:3},faz:['Listar calendários','Ler','Criar (reunião online + lembrete)','Atualizar/excluir'],gaps:['Disponibilidade','Recorrência'],riscos:[['alto','Sem disponibilidade (o serviço já sabe fazer)'],['medio','Fuso fixo em UTC']],p0:['Consulta de disponibilidade']},
+ {id:'onedrive',name:'OneDrive',modulo:'Microsoft',status:'parc',headline:'Só mostra a ficha do arquivo, não o conteúdo.',plain:'Lista arquivos do OneDrive, mas não lê o conteúdo (mesmo já existindo no servidor) nem salva nada lá.',impacto:['Experiência'],arch:'Passa pelo workflow-service → Graph (login renovado).',mat:{Leitura:2,Escrita:1,Auth:4,Cobertura:1},faz:['Listar/buscar e mostrar dados do arquivo'],gaps:['Ler conteúdo','Salvar','Organizar','Compartilhar'],riscos:[['alto','Não lê o conteúdo dos arquivos'],['alto','Compartilhados exigem permissão não concedida']],p0:['Leitura de conteúdo','Salvar arquivo']},
+ {id:'notion',name:'Notion',modulo:'Notion',status:'op',headline:'A mais completa — o risco é escrever no lugar errado.',plain:'Faz tudo: criar, editar, buscar e organizar. Cuidados: com mais de um espaço, edições vão para o primeiro; apagar/editar “por nome” pode pegar a página errada.',impacto:['Experiência'],arch:'Passa pelo workflow-service (a mais limpa). Login de longa duração.',mat:{Leitura:5,Escrita:5,Auth:4,Cobertura:4},faz:['Criar/editar/buscar páginas e bases','Edição cirúrgica de trecho','Encontrar por nome'],gaps:['Ver estrutura da base','Criar base nova','Comentários'],riscos:[['alto','Com vários espaços, edições vão para o primeiro'],['alto','Apagar/editar por nome pode pegar a página errada'],['alto','Filtro inválido devolve tudo como se filtrado']],p0:['Escrever no espaço certo','Correspondência exata']},
+ {id:'jira',name:'Jira',modulo:'Jira',status:'op',headline:'Faz muito, mas não cria épico e lê fora do escopo.',plain:'Cria tarefas, comenta, muda status e move para sprint. Mas falha ao criar um Épico (campo obrigatório não preenchido) e a leitura não respeita o escopo configurado.',impacto:['Experiência','Segurança'],arch:'Fala direto com a API do Jira. Melhor renovação de login do conjunto.',mat:{Leitura:4,Escrita:5,Auth:5,Cobertura:3},faz:['Ler tarefa','Buscar (JQL)','Criar/comentar/mudar status','Mover para sprint'],gaps:['Criar Épico','Registrar horas','Anexos','Vincular tarefas'],riscos:[['alto','Leitura de tarefa não confere a associação da fonte'],['alto','Criar Épico falha: campo "Epic Name" não preenchido'],['alto','“Por aproximação” em status/sprint pode acertar o alvo errado']],p0:['Conferir associação na leitura','Corrigir criação de Épico']},
+ {id:'teams',name:'Microsoft Teams',modulo:'Microsoft',status:'bloq',headline:'Provavelmente não funciona hoje.',plain:'As permissões do Teams não são pedidas na hora de conectar a conta, então as ações tendem a falhar — e várias exigem aprovação do administrador.',impacto:['Estabilidade','Experiência'],arch:'Passa pelo workflow-service → Graph.',mat:{Leitura:2,Escrita:2,Auth:1,Cobertura:2},faz:['Listar times/canais','Ler mensagens de canal','Postar em canal'],gaps:['Mensagens diretas','Responder/reações'],riscos:[['alto','Permissões não pedidas ao conectar → falha provável'],['alto','Exigem aprovação do administrador']],p0:['Pedir permissões ao conectar (+admin)']},
+ {id:'sharepoint',name:'SharePoint',modulo:'Microsoft',status:'bloq',headline:'Boa capacidade, mas barrada pela permissão.',plain:'Lê o conteúdo (até PDF e Word) e salva arquivos — mas, como no Teams, a permissão não é pedida ao conectar, então tende a falhar até ajustar.',impacto:['Estabilidade','Experiência'],arch:'Passa pelo workflow-service → Graph.',mat:{Leitura:4,Escrita:3,Auth:1,Cobertura:3},faz:['Navegar/buscar','Ler conteúdo (PDF/Word)','Salvar arquivo'],gaps:['Excluir/mover/renomear','Busca por nome'],riscos:[['alto','Permissão não pedida ao conectar → falha provável'],['medio','Leitura não confere a associação da fonte']],p0:['Pedir permissões ao conectar']},
+ {id:'slack',name:'Slack',modulo:'Outros',status:'inv',inv:true,headline:'Mapeada — ainda não auditada.',plain:'Existe em alto nível; falta a análise detalhada.',impacto:[],arch:'Inventariada.',mat:{},faz:['Listar canais','Enviar/ler mensagem','Definir status'],gaps:['Auditoria pendente'],riscos:[['baixo','Não auditada']],p0:[]},
+ {id:'whatsapp',name:'WhatsApp',modulo:'Outros',status:'inv',inv:true,headline:'Mapeada — ainda não auditada.',plain:'Funciona, mas usa biblioteca não-oficial (ver Governança) e ainda não foi auditada.',impacto:[],arch:'Inventariada.',mat:{},faz:['Enviar mensagem/áudio','Salvar contato','Analisar/sincronizar'],gaps:['Auditoria pendente'],riscos:[['baixo','Não auditada']],p0:[]},
+ {id:'alexa',name:'Alexa',modulo:'Outros',status:'inv',inv:true,headline:'Mapeada — ainda não auditada.',plain:'Existe em alto nível; falta a análise detalhada.',impacto:[],arch:'Inventariada.',mat:{},faz:['Dispositivos','Lembrete','Lista de compras','Rotina','Música'],gaps:['Auditoria pendente'],riscos:[['baixo','Não auditada']],p0:[]},
+ {id:'tuya',name:'Tuya IoT',modulo:'Outros',status:'inv',inv:true,headline:'Mapeada — ainda não auditada.',plain:'Existe em alto nível; falta a análise detalhada.',impacto:[],arch:'Inventariada.',mat:{},faz:['Listar/controlar dispositivo','Status'],gaps:['Auditoria pendente'],riscos:[['baixo','Não auditada']],p0:[]},
+ {id:'contaazul',name:'Conta Azul',modulo:'Outros',status:'inv',inv:true,headline:'Mapeada — ainda não auditada.',plain:'Consultas financeiras já existem; falta a análise detalhada.',impacto:[],arch:'Inventariada.',mat:{},faz:['Consultar clientes/notas/contas/fluxo de caixa'],gaps:['Auditoria pendente'],riscos:[['baixo','Não auditada']],p0:[]},
+ {id:'hubspot',name:'HubSpot',modulo:'Outros',status:'inv',inv:true,headline:'Mapeada — ainda não auditada.',plain:'Escreve no CRM; falta a análise detalhada.',impacto:[],arch:'Inventariada.',mat:{},faz:['Criar/atualizar registros do CRM'],gaps:['Auditoria pendente'],riscos:[['baixo','Não auditada']],p0:[]},
+];
+INTEGS.forEach(d=>{d.tipo='integ';d.etapa='consumo';});
+MOD.forEach(d=>{d.tipo='frente';});
+const ALL=[...MOD,...INTEGS];
+const STLABEL={op:['No ar','ok'],parc:['Parcial','medio'],bloq:['Bloqueada','alto'],inv:['Mapeada','baixo'],frente:['','medio']};
+
+const STAGES=[
+ {k:'cadastro',n:1,name:'Acesso & Cadastro',sub:'O usuário entra na plataforma: cria conta, faz login e recupera a senha.',subs:['Cadastro','Login / Acesso','Login social','Esqueci a senha']},
+ {k:'criar',n:2,name:'Criação do agente',sub:'Define o comportamento e o conhecimento do agente — e o compartilhamento com outros usuários.',subs:['Prompt','Fontes de dados','Base de conhecimento','Compartilhamento']},
+ {k:'integracao',n:3,name:'Integração',sub:'O módulo que CONECTA as ferramentas externas: OAuth, MCP e API custom.',subs:['OAuth','MCP','API custom'],note:'Aqui é só a <b>conexão/configuração</b>. O que o agente <b>faz</b> com cada ferramenta está na aba <b>Consumo dos serviços</b> (fora da jornada, pois acontece o tempo todo).'},
+ {k:'fonteconfig',n:4,name:'Fonte de dados (configuração)',sub:'Como cada aplicação vira uma fonte que o agente consulta — um quadro por app.',subs:['Visão geral','Google','Microsoft','Jira','Notion','MCP & API','Outros']},
+ {k:'conversa',n:5,name:'Módulo de conversa',sub:'O coração do app: streaming, parar/sair, latência, memória, mensagens e múltiplas conversas.',subs:['Streaming & Stop','Sair/voltar','Volume de dados','Voz/Vídeo','Menção & Grupos','Comitês','Classificar & Histórico','Funções internas','Latência','Memória','Tratamento de msg','Múltiplas conversas']},
+ {k:'relatorio',n:6,name:'Relatório',sub:'Dois caminhos: o relatório do agente (CRUD real) e o PDF de analytics (dados fictícios).',subs:['Analytics (PDF)','Do agente']},
+ {k:'automacao',n:7,name:'Automação',sub:'Agente analisa uma fonte numa frequência e age se as condições baterem — com freio de emergência e "só roda se mudou".'},
+ {k:'inbox',n:8,name:'Inbox (Caixa de Entrada)',sub:'Onde os agentes "falam" com você fora do chat: relatórios, alertas, tarefas, convites.',subs:['Segurança','Produto']},
+ {k:'tx',n:'⚙',name:'Bastidores — camadas transversais',sub:'Sustentam toda a jornada: Governança · FinOps · Segurança · Privacidade.',tx:true},
+];
+
+const TRANS=[
+ {t:'Recursos sofisticados, porém “opcionais demais”',d:'Tradutor de erros, resumo de conversa, memória de longo prazo, busca avançada, escolha de modelo — muitos dependem de a IA decidir certo ou de um caminho estar ativo. Quando falha, a experiência piora EM SILÊNCIO.',where:'Latência · Memória · Tratamento de msg · Conhecimento'},
+ {t:'Banco de dados compartilhado',d:'A estrutura do banco é duplicada entre serviços. Explica os deploys que quebram, aumenta o estrago de uma falha de segurança e dificulta apagar dados (LGPD). Uma raiz, três problemas.',where:'Governança · Segurança · Privacidade'},
+ {t:'Defesas escritas, mas desligadas',d:'Padrão recorrente: a peça de segurança existe pronta no código mas não foi conectada — o guard HMAC do webhook de pagamento, o rate limit de login, o tradutor de erros, a criptografia do CPF. Ligar o que já existe fecha vários riscos com baixo esforço.',where:'Pagamentos · Auth & Config · Conversa'},
+];
+const ROAD={
+ p0:{cap:'Pouco esforço, melhora visível',items:[['Conectar o guard do webhook de pagamento (Eduzz) — hoje forjável','Pagamentos • CVSS 9.3'],['Ligar o rate limit de login + tirar o segredo padrão do código (JWT)','Auth & Config'],['CORS com allowlist + CSP em produção','Auth & Config'],['Corrigir o SQL injection no fluxo de ofertas','Pagamentos'],['Retry a 429 no chat ao vivo + cadeia de fallback','Resiliência de provedor'],['Revogar sessões ao redefinir senha + implementar verificação de e-mail','Acesso & Cadastro'],['Corrigir timeout de 30s do chat + cancelar backend ao desistir','Conversa • corta respostas e gera custo'],['Não cancelar a resposta ao trocar de tela (só no Stop)','Conversa • navegar mata a resposta'],['Mostrar erros claros no chat','Conversa • o tradutor já existe'],['Disparar a memória de longo prazo no chat','Conversa'],['Concluir gravação do aprendizado e leitura de documentos','Base de conhecimento'],['Publicações que não quebram (migrações compatíveis)','Governança'],['Tornar o custo de IA visível + revisar cota','FinOps'],['Proteger o CPF','Privacidade'],['Corrigir formatação no envio de email','Gmail + Outlook'],['Pedir permissões de Teams/SharePoint ao conectar','Integração'],['Conferir associação na leitura (Jira) + corrigir Épico','Integração'],['Criptografar credenciais de MCP/API custom + anti-SSRF no endereço','Módulo de Integração'],['Tirar dados inventados do PDF de analytics (ou desativar)','Relatório'],['Corrigir voz do agente no TTS + purgar dados de emoção','Conversa/Privacidade'],['Trava de instância única no agendador de automações','Automação'],['Corrigir IDOR do Inbox (só JWT) + proteger o create','Inbox/Segurança']]},
+ p1:{cap:'Capacidade e robustez',items:[['Resumo automático antes de cortar a conversa','Memória'],['Resposta mais rápida + plano B de IA','Latência'],['Verificação automática a cada mudança (CI)','Governança'],['Interface de abas para múltiplas conversas','Conversa'],['Proteções contra manipulação do agente','Segurança'],['Disponibilidade na agenda; ler conteúdo; salvar arquivos','Integração']]},
+ p2:{cap:'Ataca as raízes',items:[['Unificar a estrutura do banco e separar dados por serviço','Encerra deploy que quebra + risco de segurança/LGPD'],['Apagamento completo de dados de uma pessoa','Privacidade'],['Auditar Relatório, Automação e Cadastro a fundo','Fecha a jornada'],['Auditar Slack, WhatsApp, Alexa, Tuya, Conta Azul, HubSpot','Fecha as integrações']]},
+};
+
+// ===== CATÁLOGO =====
+const CAT=[
+ {id:'sheets',name:'Google Sheets',fam:'Google',rows:[['Ler dados','sim','sim'],['Escrever célula','sim','sim'],['Adicionar linha','sim','sim'],['Atualizar registro por chave','parcial','nao','Não implementado: só adiciona linha, não localiza e atualiza um registro existente.'],['Apagar/limpar linha','sim','nao','Sem operação de delete/clear no executor.'],['Escrita em lote','sim','nao','Escreve 1 célula/linha por vez; não envia lote.'],['Criar planilha/aba','sim','nao','Executor não cria spreadsheet nem nova aba.'],['Formatação','sim','nao','A API permite, mas o executor não expõe formatação.']]},
+ {id:'gmail',name:'Gmail',fam:'Google',rows:[['Ler/buscar','sim','sim'],['Enviar texto','sim','sim'],['Enviar com anexo','sim','nao','Executor não monta o anexo (MIME multipart).'],['Responder na conversa','parcial','nao','Não preserva threadId/In-Reply-To: abre e-mail novo em vez de responder.'],['Organizar marcadores','sim','parcial','Depende do escopo gmail.modify, normalmente não concedido → tende a falhar.'],['Ler email completo','sim','parcial','Lê só o trecho/primeira parte de e-mails com várias partes.']]},
+ {id:'gcal',name:'Google Calendar',fam:'Google',rows:[['Ler eventos','sim','sim'],['Criar/editar/excluir','sim','sim'],['Convidar pessoas','sim','sim'],['Consultar disponibilidade','sim','nao','free/busy não implementado: não sabe quando você está livre.'],['Eventos recorrentes','sim','nao','RRULE (recorrência) não suportado.'],['Link de reunião','sim','nao','Não cria Google Meet no evento.'],['Escolher calendário','sim','nao','Usa só o calendário primário.']]},
+ {id:'gdrive',name:'Google Drive & Docs',fam:'Google',rows:[['Listar/buscar arquivos','sim','sim'],['Ler texto de Doc','sim','nao','Não extrai o conteúdo do documento (só metadados/link).'],['Ler planilha','sim','parcial','Leitura reimplementada à parte, sem renovar o login.'],['Baixar/exportar','sim','nao','Export/download não implementado.'],['Salvar/upload','sim','nao','Não grava arquivos gerados de volta no Drive.'],['Editar Doc','sim','parcial','Só anexa texto ao fim; não edita trechos.'],['Criar pasta/organizar','sim','nao','Sem operações de mover/criar pasta.']]},
+ {id:'omail',name:'Outlook Mail',fam:'Microsoft',rows:[['Ler/buscar','sim','sim'],['Enviar','sim','sim'],['Excluir (lote)','sim','sim'],['Enviar com anexo','sim','nao','Anexos não implementados no envio.'],['Marcar lido/mover','sim','nao','Executor não expõe markRead/move.'],['Responder na conversa','parcial','nao','Não usa conversationId para responder na mesma thread.']]},
+ {id:'ocal',name:'Outlook Calendar',fam:'Microsoft',rows:[['Listar calendários','sim','sim'],['Ler eventos','sim','sim'],['Criar/editar/excluir','sim','sim'],['Reunião online (Teams)','sim','sim'],['Lembrete','sim','sim'],['Consultar disponibilidade','sim','nao','getSchedule (free/busy) não exposto — o serviço já sabe fazer.'],['Eventos recorrentes','sim','nao','Recorrência não suportada.']]},
+ {id:'onedrive',name:'OneDrive',fam:'Microsoft',rows:[['Listar/buscar','sim','sim'],['Ler conteúdo','sim','nao','Baixa só os metadados; não lê o conteúdo do arquivo.'],['Baixar','sim','nao','Download não implementado.'],['Salvar/upload','sim','nao','Upload não implementado.'],['Organizar (mover/renomear)','sim','nao','Operações de organização não expostas.'],['Compartilhar','sim','nao','Exige permissão de compartilhamento não concedida.']]},
+ {id:'teams',name:'Microsoft Teams',fam:'Microsoft',note:'Ações dependem de permissão ainda não pedida ao conectar → tendem a falhar hoje.',rows:[['Listar times/canais','sim','parcial','Permissão Graph não pedida ao conectar → costuma falhar.'],['Ler mensagens de canal','sim','parcial','Mesma trava de permissão (ChannelMessage.Read).'],['Postar em canal','sim','parcial','Permissão de escrita não concedida (+ aprovação de admin).'],['Mensagens diretas','sim','nao','Chat 1:1 não implementado.']]},
+ {id:'sharepoint',name:'SharePoint',fam:'Microsoft',note:'Mesma trava de permissão do Teams: capacidade existe, mas o acesso não foi concedido ao conectar.',rows:[['Navegar/buscar','sim','parcial','Permissão Sites.Read não pedida ao conectar.'],['Ler conteúdo (PDF/Word)','sim','parcial','Depende da permissão de leitura do site, não concedida.'],['Salvar arquivo','sim','parcial','Permissão de escrita no site não concedida.'],['Excluir/mover/renomear','parcial','nao','Operações de arquivo não expostas pelo executor.']]},
+ {id:'notion',name:'Notion',fam:'Notion',rows:[['Ler/criar/editar páginas','sim','sim'],['Bases: consultar/criar/editar','sim','sim'],['Buscar no espaço','sim','sim'],['Edição cirúrgica de trecho','sim','sim'],['Ver estrutura da base','sim','parcial','Lê propriedades, mas não devolve o schema completo da base.'],['Criar base nova','nao','nao','A API do Notion não permite criar database via integração.'],['Comentários','nao','nao','Endpoint de comentários não utilizado.']]},
+ {id:'jira',name:'Jira',fam:'Jira',rows:[['Ler tarefa','sim','sim'],['Buscar (JQL)','sim','sim'],['Criar tarefa','sim','sim'],['Mudar status','sim','sim'],['Comentar','sim','sim'],['Mover para sprint','sim','sim'],['Criar Épico','sim','nao','Falha: campo obrigatório "Epic Name" não é preenchido.'],['Registrar horas','sim','nao','Worklog não implementado.'],['Anexos','sim','nao','Upload de anexo não implementado.'],['Vincular tarefas','sim','nao','Issue links não implementados.']]},
+];
+const CATBYID={}; CAT.forEach(c=>CATBYID[c.id]=c);
+function cmpTable(c){const rows=c.rows.map(r=>{const why=r[3]?`<div class="cmpwhy">${r[3]}</div>`:'';return `<tr><td class="r">${r[0]}${why}</td><td class="c"><span class="mk ${MK[r[1]][0]}" title="Possível: ${MKT.serv[r[1]]}">${MK[r[1]][1]}</span></td><td class="c"><span class="mk ${MK[r[2]][0]}" title="Plataforma: ${MKT.ag[r[2]]}">${MK[r[2]][1]}</span></td></tr>`;}).join('');const note=c.note?`<div class="catnote" style="margin-top:8px;border-radius:8px;border:1px solid #f1e7c9">${c.note}</div>`:'';return `<div><div class="sec">O que a ferramenta permite × o que o agente faz · <b>Habilitado ${catScore(c)}%</b></div><table class="cattbl"><thead><tr><th class="r">Recurso</th><th title="O que dá para usar/configurar na integração">Possível na integração</th><th title="O que já está desenvolvido na plataforma">Já na plataforma</th></tr></thead><tbody>${rows}</tbody></table>${note}</div>`;}
+
+// ===== render =====
+function bar(l,v){const c=v>=4?'var(--ok)':v>=3?'var(--mid)':'var(--hi)';return `<div class="bar"><span style="min-width:62px">${l}</span><div class="track"><div class="fill" style="width:${v*20}%;background:${c}"></div></div></div>`}
+function scoreClass(s){return s>=70?'ok':s>=40?'medio':'alto';}
+function matScore(d){if(d.inv||!d.mat||d.mat.Leitura===undefined)return null;return Math.round((d.mat.Leitura+d.mat.Escrita+d.mat.Auth+d.mat.Cobertura)/20*100);}
+function scoreBadge(d){const s=matScore(d);if(s===null)return `<div style="text-align:right"><span class="scorelbl">Maturidade</span><span class="scorebadge inv">—</span></div>`;return `<div style="text-align:right"><span class="scorelbl">Maturidade</span><span class="scorebadge ${scoreClass(s)}" title="Média de Leitura, Escrita, Login e Cobertura">${s}<small>/100</small></span></div>`;}
+function catScore(c){let serv=0,ag=0;c.rows.forEach(r=>{const sv=MKVAL[r[1]],av=MKVAL[r[2]];serv+=sv;ag+=Math.min(av,sv);});return serv>0?Math.round(ag/serv*100):0;}
+function maxSev(d){const l=d.tipo==='frente'?d.achados:d.riscos;return l.reduce((m,r)=>Math.max(m,{critico:4,alto:3,medio:2,baixo:1}[r[0]]||0),0);}
+function impactsHtml(d){return (d.impacto&&d.impacto.length)?`<div class="impacts">${d.impacto.map(i=>`<span class="imp ${IMPCLASS[i]}">${i}</span>`).join('')}</div>`:'';}
+function tagsHtml(d){
+ let t='';
+ if(d.tipo==='frente'){const ms=maxSev(d);t+=`<span class="sevtag ${ms>=4?'critico':ms>=3?'alto':ms>=2?'medio':'baixo'}">${ms>=4?'Atenção crítica':ms>=3?'Atenção alta':ms>=2?'Atenção média':'Observação'}</span>`;const dp=DEPTH[d.depth];t+=`<span class="depth ${dp[0]}">${dp[1]}</span>`;}
+ else{const [lbl,cls]=STLABEL[d.status];t+=`<span class="sevtag ${cls}">${lbl}</span>`;}
+ return `<div class="tags">${t}</div>`;
+}
+function techFrente(d){return `<div class="tech"><div class="archline">${d.resumo}</div><div><div class="sec">Achados</div><div class="rl">${d.achados.map(r=>`<div class="ri"><span class="dot ${r[0]}">${r[0].toUpperCase()}</span><span>${r[1]}</span></div>`).join('')}</div></div><div><div class="sec">Ações</div><div class="rl">${d.acoes.map(a=>{const _id=ACID[anorm(a[1])];return `<div class="ri"><span class="dot ${a[0]}">${a[0]}</span><span>${_id?`<code class="acref">${_id}</code> `:''}${a[1]}</span></div>`;}).join('')}</div></div></div>`;}
+function coverBlock(c){const tot=c.rows.length;let f=0,pa=0,n=0;c.rows.forEach(r=>{const a=r[2];if(a==='sim')f++;else if(a==='parcial')pa++;else n++;});const pct=catScore(c);return `<div><div class="sec">Abrangência — o que dá para usar na integração × o que a plataforma já faz</div><div class="covline">A plataforma já faz <b>${f}</b> de <b>${tot}</b> recursos por completo${pa?` (+${pa} parcial)`:''} · <b>${pct}% habilitado</b></div><div class="covbar">${f?`<span class="cf" style="flex:${f}"></span>`:''}${pa?`<span class="cp" style="flex:${pa}"></span>`:''}${n?`<span class="cn" style="flex:${n}"></span>`:''}</div><div class="covleg"><span><i class="cf"></i>${f} pleno</span><span><i class="cp"></i>${pa} parcial</span><span><i class="cn"></i>${n} indisponível</span></div></div>`;}
+function techInteg(d){const bars=d.inv?'':`<div class="bars">${bar('Leitura',d.mat.Leitura)}${bar('Escrita',d.mat.Escrita)}${bar('Login',d.mat.Auth)}${bar('Cobertura',d.mat.Cobertura)}</div>`;const faz=`<div><div class="sec">O que faz hoje</div><ul class="li">${d.faz.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;const gaps=d.inv?'':`<div><div class="sec">Lacunas</div><ul class="li dim">${d.gaps.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;const riscos=`<div><div class="sec">Riscos</div><div class="rl">${d.riscos.map(r=>`<div class="ri"><span class="dot ${r[0]}">${r[0].toUpperCase()}</span><span>${r[1]}</span></div>`).join('')}</div></div>`;const p0=d.p0&&d.p0.length?`<div><div class="sec">Começar por</div><div class="p0s">${d.p0.map(x=>{const _id=ACID[anorm(x)];return `<span class="p0">${_id?`<code class="acref">${_id}</code> `:''}${x}</span>`;}).join('')}</div></div>`:'';const cov=CATBYID[d.id]?coverBlock(CATBYID[d.id]):'';return `<div class="tech"><div class="archline">${d.arch}</div>${bars}${cov}${faz}${gaps}${riscos}${p0}</div>`;}
+function cardHtml(d){const kicker=d.tipo==='frente'?(d.etapa==='tx'?'Bastidores':'Etapa'):`Integração · ${d.modulo}`;const tech=d.tipo==='frente'?techFrente(d):techInteg(d);return `<div class="card"><div class="top"><span class="kicker">${kicker}</span><div style="display:flex;gap:8px;align-items:flex-start">${d.tipo==='integ'?scoreBadge(d):''}${tagsHtml(d)}</div></div><h3 class="title">${d.name}</h3><p class="headline">${d.headline}</p><p class="plain">${d.plain}</p>${impactsHtml(d)}<button class="techbtn" onclick="this.parentElement.classList.toggle('open')"><span class="arw">▸</span> Detalhe técnico</button>${tech}</div>`;}
+const CFGSRC=[
+ {app:'Google',rows:[['Selecionar arquivo (Picker)','sim','sim',''],['Selecionar pasta','sim','nao','O backend já varre pasta (google_drive_folder), mas a aba “Pastas” está desativada esperando o escopo drive.readonly — hoje você adiciona arquivo por arquivo.'],['Colar link/URL do arquivo','sim','nao','Não há campo para colar link; só a seleção pelo Picker.'],['Aba + intervalo da planilha','sim','sim',''],['Marcadores do Gmail','sim','sim',''],['Calendário','sim','sim','']]},
+ {app:'Microsoft 365',rows:[['Selecionar arquivo','sim','sim',''],['Selecionar pasta','sim','sim','A Microsoft expõe pasta na configuração (diferente do Google).'],['OneDrive / SharePoint (site/biblioteca)','sim','sim','Configurável; o uso em runtime depende de escopo ainda não concedido.'],['Outlook / Teams (canal)','sim','sim','']]},
+ {app:'Jira',rows:[['Projetos (vários)','sim','sim',''],['Boards (vários)','sim','sim',''],['JQL','sim','sim',''],['Tipos: Issues / Epics / Sprints / Comentários','sim','sim','']]},
+ {app:'Notion',rows:[['Várias páginas','sim','sim',''],['Vários databases','sim','sim','']]},
+ {app:'MCP / API custom',rows:[['Tools, argumentos, capabilities','sim','sim',''],['Endereço (URL) e headers','sim','sim','Oferecido, mas sem anti-SSRF e com credencial em texto puro (ver módulo de Integração).']]},
+ {app:'Slack, GitHub, Databricks, LinkedIn, Tuya, WhatsApp',rows:[['Criar como fonte de dados','sim','nao','Os tipos existem no backend (enum), mas não aparecem no seletor — capacidade construída e ociosa.']]},
+ {app:'ERP / Banco de dados',rows:[['Oferecido no seletor de tipos','parcial','sim','Aparece na tela, mas o enum do backend só tem database_table (sem erp_system) — risco de “oferece e não entrega”. Verificar.']]},
+];
+function cfgCard(c){const rows=c.rows.map(r=>{const why=r[3]?`<div class="cmpwhy">${r[3]}</div>`:'';const gap=r[2]!=='sim'?' class="gap"':'';return `<tr${gap}><td class="r">${r[0]}${why}</td><td class="c"><span class="mk ${MK[r[1]][0]}" title="Possível: ${MKT.serv[r[1]]}">${MK[r[1]][1]}</span></td><td class="c"><span class="mk ${MK[r[2]][0]}" title="Oferecido na aplicação: ${MKT.ag[r[2]]}">${MK[r[2]][1]}</span></td></tr>`;}).join('');const gaps=c.rows.filter(r=>r[2]!=='sim').length;const badge=gaps?`<span class="scorebadge alto" title="recursos que dá para prover mas a aplicação não oferece">${gaps} gap${gaps>1?'s':''}</span>`:`<span class="scorebadge ok">completo</span>`;return `<div class="catcard"><div class="cathead"><div><h3>${c.app}</h3><span class="fam">Fonte de dados</span></div><div style="text-align:right"><span class="scorelbl">Não oferecido</span>${badge}</div></div><table class="cattbl"><thead><tr><th class="r">Forma de criar / configurar</th><th>Possível</th><th>Oferecido</th></tr></thead><tbody>${rows}</tbody></table></div>`;}
+function cfgSection(){return `<div class="note" style="margin-top:16px"><b>Como criar a fonte de dados — o que é possível oferecer × o que a aplicação oferece.</b> As linhas em vermelho (Oferecido = <span class="mk nao">–</span>) são <b>recursos que dá para prover ao usuário, mas a aplicação ainda não oferece</b> — o gap de produto na configuração da fonte.</div><div class="catgrid" style="margin-top:12px">${CFGSRC.map(cfgCard).join('')}</div>`;}
+function renderFontes(){document.getElementById('fontes-host').innerHTML=`<div class="catgrid" style="margin-top:6px">${CFGSRC.map(cfgCard).join('')}</div>`;}
+function renderJourney(){
+ document.getElementById('journey').innerHTML=STAGES.map(s=>{
+   const cards=ALL.filter(d=>d.etapa===s.k);
+   const subs=s.subs?`<div class="subs">${s.subs.map(x=>`<span class="s">${x}</span>`).join('')}</div>`:'';
+   const note=s.note?`<div class="note">${s.note}</div>`:'';
+   const grid=cards.length?`<div class="grid">${cards.map(cardHtml).join('')}</div>`:'';
+   const extra=s.k==='fonteconfig'?cfgSection():'';
+   const head=s.k==='integracao'?'<div class="flow3"><span class="step on">Conectar<small>você está aqui</small></span><span class="arr">→</span><span class="step">Configurar fonte<small>aba Fonte de dados</small></span><span class="arr">→</span><span class="step">Usar<small>aba Consumo</small></span></div>':'';
+   return `<div class="stage${s.tx?' tx':''}" data-n="${s.n}"><h2>${s.name}</h2><p class="ssub">${s.sub}</p>${head}${subs}${note}${grid}${extra}</div>`;
+ }).join('');
+}
+const MK={sim:['sim','✓'],parcial:['parcial','◐'],nao:['nao','–']};
+const MKT={serv:{sim:'Dá para usar/configurar na integração',parcial:'Dá para usar de forma parcial/limitada',nao:'A integração não oferece este recurso'},ag:{sim:'Já desenvolvido na plataforma',parcial:'Desenvolvido em parte (ou bloqueado por permissão)',nao:'Ainda não desenvolvido na plataforma'}};
+function catCard(c){const rows=c.rows.map(r=>{const why=r[3]?`<div class="cmpwhy">${r[3]}</div>`:'';return `<tr><td class="r">${r[0]}${why}</td><td class="c"><span class="mk ${MK[r[1]][0]}" title="Possível: ${MKT.serv[r[1]]}">${MK[r[1]][1]}</span></td><td class="c"><span class="mk ${MK[r[2]][0]}" title="Plataforma: ${MKT.ag[r[2]]}">${MK[r[2]][1]}</span></td></tr>`;}).join('');const note=c.note?`<div class="catnote">${c.note}</div>`:'';return `<div class="catcard"><div class="cathead"><div><h3>${c.name}</h3><span class="fam">${c.fam}</span></div><div style="text-align:right"><span class="scorelbl">Habilitado</span><span class="scorebadge ${scoreClass(catScore(c))}" title="% do que a integração permite que já está desenvolvido na plataforma">${catScore(c)}<small>%</small></span></div></div><table class="cattbl"><thead><tr><th class="r">Recurso</th><th title="O que dá para usar/configurar na integração">Possível na integração</th><th title="O que já está desenvolvido na plataforma">Já na plataforma</th></tr></thead><tbody>${rows}</tbody></table>${note}</div>`;}
+let catFam='Todas';const CATFAMS=['Todas','Google','Microsoft','Notion','Jira','Outros'];
+function renderConsumo(){
+  document.getElementById('catfilter').innerHTML=CATFAMS.map(f=>`<button class="chip ${f===catFam?'on':''}" onclick="setCatFam('${f}')">${f}</button>`).join('');
+  document.getElementById('consumogrid').innerHTML=INTEGS.filter(d=>catFam==='Todas'||d.modulo===catFam).map(cardHtml).join('');
+  document.getElementById('catgrid').innerHTML=CAT.filter(c=>catFam==='Todas'||c.fam===catFam).map(catCard).join('');
+}
+function setCatFam(f){catFam=f;renderConsumo();}
+function kpis(){const altF=MOD.reduce((a,d)=>a+d.achados.filter(r=>r[0]==='alto'||r[0]==='critico').length,0);const altI=INTEGS.filter(d=>!d.inv).reduce((a,d)=>a+d.riscos.filter(r=>r[0]==='alto'||r[0]==='critico').length,0);const k=[['ac',String(STAGES.filter(s=>!s.tx).length),'etapas da jornada'],['ac',INTEGS.length,'integrações'],['hi',altF+altI,'achados crítico/alto'],['ok',ROAD.p0.items.length,'ações para começar agora']];document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi ${x[0]}"><div class="n">${x[1]}</div><div class="l">${x[2]}</div></div>`).join('');}
+function trans(){document.getElementById('trans').innerHTML=TRANS.map(t=>`<div class="tcard"><div class="t">${t.t}</div><p>${t.d}</p><div class="where">↳ ${t.where}</div></div>`).join('');}
+function road(){const lane=(k,t)=>`<div class="lane ${k}"><h4>${t}</h4><div class="cap">${ROAD[k].cap}</div>${ROAD[k].items.map(i=>`<div class="item"><b>${i[0]}</b><br><span class="src">${i[1]}</span></div>`).join('')}</div>`;document.getElementById('road').innerHTML=lane('p0','Agora')+lane('p1','Próximo')+lane('p2','Estrutural');}
+
+// ===== Lista de achados =====
+const STAGE_NAME={}; STAGES.forEach(s=>STAGE_NAME[s.k]=s.name);
+const SEVRANK2={critico:4,alto:3,medio:2,baixo:1};
+const PRIORANK={P0:1,P1:2,Estrutural:3,P2:4};
+function grupoOf(d){return d.etapa==='consumo'?'Consumo':d.etapa==='tx'?'Bastidores':'Jornada';}
+function etapaOf(d){return d.etapa==='consumo'?d.modulo:(d.etapa==='tx'?'Bastidores':(STAGE_NAME[d.etapa]||d.etapa));}
+const FINDINGS=[];
+ALL.forEach(d=>{const list=d.tipo==='frente'?d.achados:d.riscos;const acoes=d.tipo==='frente'?(d.acoes||[]).map(a=>a[1]):(d.p0||[]);(list||[]).forEach((r,i)=>{const prio=(r[0]==='critico'||r[0]==='alto')?'P0':r[0]==='medio'?'P1':'P2';FINDINGS.push({id:'RX-'+(d.id||'X').toUpperCase()+'-'+(i+1),grupo:grupoOf(d),etapa:etapaOf(d),modulo:d.name,texto:r[1],sev:r[0],sevRank:SEVRANK2[r[0]]||0,imp:d.impacto||[],prio,prioRank:PRIORANK[prio]||9,plain:d.plain||'',acoes});});});
+const lf={grupo:'Tudo',sev:'Todos',prio:'Todos',imp:'Tudo',etapa:'Tudo',q:''};
+let lsort={key:'sevRank',dir:-1};
+const L_GRUPOS=['Tudo','Jornada','Consumo','Bastidores'],L_SEV=['Todos','critico','alto','medio','baixo'],L_PRIO=['Todos','P0','P1','P2','Estrutural'],L_IMP=['Tudo','Experiência','Custo','Segurança','Conformidade','Estabilidade'];
+function lChips(elId,arr,key){document.getElementById(elId).innerHTML=arr.map(v=>`<button class="chip ${lf[key]===v?'on':''}" data-k="${key}" data-v="${v}">${v==='critico'?'Crítico':v==='alto'?'Alto':v==='medio'?'Médio':v==='baixo'?'Baixo':v}</button>`).join('');}
+function lFiltersInit(){
+  lChips('f-grupo',L_GRUPOS,'grupo');lChips('f-sev',L_SEV,'sev');lChips('f-prio',L_PRIO,'prio');lChips('f-imp',L_IMP,'imp');
+  const cur=document.getElementById('f-etapa').value||'Tudo';
+  const stageOrder={}; STAGES.filter(s=>!s.tx).forEach((s,i)=>stageOrder[s.name]=i);
+  const byG={Jornada:new Set(),Consumo:new Set(),Bastidores:new Set()};
+  FINDINGS.forEach(f=>{if(byG[f.grupo])byG[f.grupo].add(f.etapa);});
+  const opt=e=>`<option value="${e}" ${e===cur?'selected':''}>${e}</option>`;
+  const jor=Array.from(byG.Jornada).sort((a,b)=>(stageOrder[a]??99)-(stageOrder[b]??99));
+  const con=Array.from(byG.Consumo).sort((a,b)=>a.localeCompare(b));
+  const bas=Array.from(byG.Bastidores).sort((a,b)=>a.localeCompare(b));
+  let html='<option value="Tudo">Tudo</option>';
+  if(jor.length)html+=`<optgroup label="Jornada do usuário">${jor.map(opt).join('')}</optgroup>`;
+  if(con.length)html+=`<optgroup label="Consumo (integrações)">${con.map(opt).join('')}</optgroup>`;
+  if(bas.length)html+=`<optgroup label="Bastidores">${bas.map(opt).join('')}</optgroup>`;
+  document.getElementById('f-etapa').innerHTML=html;
+  document.querySelectorAll('#lista .lista-tools .chip').forEach(b=>b.onclick=()=>{lf[b.dataset.k]=b.dataset.v;lFiltersInit();renderLista();});
+  document.getElementById('f-etapa').onchange=e=>{lf.etapa=e.target.value;renderLista();};
+  document.getElementById('f-q').oninput=e=>{lf.q=e.target.value;renderLista();};
+  document.querySelectorAll('#lista table.findings thead th').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;lsort.dir=(lsort.key===k)?-lsort.dir:-1;lsort.key=k;renderLista();});
+}
+function lMatch(f){
+  if(lf.grupo!=='Tudo'&&f.grupo!==lf.grupo)return false;
+  if(lf.sev!=='Todos'&&f.sev!==lf.sev)return false;
+  if(lf.prio!=='Todos'&&f.prio!==lf.prio)return false;
+  if(lf.imp!=='Tudo'&&!f.imp.includes(lf.imp))return false;
+  if(lf.etapa!=='Tudo'&&f.etapa!==lf.etapa)return false;
+  if(lf.q&&!(f.texto+' '+f.modulo).toLowerCase().includes(lf.q.toLowerCase()))return false;
+  return true;
+}
+function renderLista(){
+  let rows=FINDINGS.filter(lMatch);
+  const k=lsort.key;rows.sort((a,b)=>{let x=a[k],y=b[k];if(typeof x==='string'){x=x.toLowerCase();y=(''+y).toLowerCase();}if(x<y)return -1*lsort.dir;if(x>y)return 1*lsort.dir;return 0;});
+  document.getElementById('lcount').textContent=`${rows.length} achado(s)`;
+  document.getElementById('findings-body').innerHTML=rows.map(f=>{
+    const impChips=f.imp.length?f.imp.map(i=>`<span class="cimp">${i}</span>`).join(''):'<span class="cetapa">—</span>';
+    const acoes=f.acoes&&f.acoes.length?f.acoes.map(a=>`<span class="facao">${a}</span>`).join(''):'<span class="cetapa">—</span>';
+    const idcell=`<code class="fid" title="Copiar ID" onclick="event.stopPropagation();navigator.clipboard&&navigator.clipboard.writeText('${f.id}');this.classList.add('copied');this.textContent='copiado!';setTimeout(()=>{this.classList.remove('copied');this.textContent='${f.id}'},900)">${f.id}</code>`;
+    const main=`<tr class="frow" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')"><td>${idcell}</td><td><span class="rcaret">▸</span><span class="cgrupo ${f.grupo}">${f.grupo}</span></td><td><div class="cmod">${f.modulo}</div><div class="cetapa">${f.etapa}</div></td><td>${f.texto}</td><td class="hidecol">${impChips}</td><td><span class="sevtag ${f.sev}">${f.sev==='critico'?'Crítico':f.sev==='alto'?'Alto':f.sev==='medio'?'Médio':'Baixo'}</span></td><td><span class="pprio ${f.prio}">${f.prio}</span></td></tr>`;
+    const detail=`<tr class="fdetail"><td colspan="7"><div class="fd"><div class="fdline"><span class="fdlbl">ID</span><span class="fidbig">${f.id}</span></div><div class="fdline"><span class="fdlbl">Em termos simples</span><span class="v">${f.plain||'—'}</span></div><div class="fdline"><span class="fdlbl">O que afeta</span><span class="v">${impChips}</span></div><div class="fdline"><span class="fdlbl">Ação sugerida</span><span class="v">${acoes}</span></div></div></td></tr>`;
+    return main+detail;
+  }).join('');
+}
+
+// ===== Lista de ações (visão unificada) =====
+const LINKS={
+ cadastro:{0:[0],1:[1],2:[2]},login:{0:[0,1],1:[2],2:[3]},forgotpw:{0:[0],1:[1,3],2:[2]},sso:{0:[0],1:[1],2:[2],3:[3],4:[4],5:[5]},comites:{0:[0],1:[1],2:[2],3:[3],4:[4]},prompt:{0:[0],1:[1]},'ia-personalidade':{0:[0,1],1:[2,3],2:[4,5]},'criacao-midia':{0:[0,1],1:[2,3],2:[4,5]},'gerenciamento-agente':{0:[0],1:[1,2,3],2:[4],3:[5],4:[7]},
+ fontesag:{0:[0,2],1:[1]},conhecimento:{0:[0],1:[1,2]},compartilhamento:{0:[0],1:[1,2]},
+ 'fonte-geral':{0:[0,1],1:[2,3]},'fonte-google':{0:[0],1:[1,2]},'fonte-google-publico':{0:[0],1:[1],2:[2],3:[5,7],4:[3,4],5:[6]},'fonte-microsoft':{0:[0],1:[2]},'fonte-jira':{0:[0,1]},
+ 'fonte-notion':{0:[0]},'fonte-mcp':{0:[0,1]},'fonte-outros':{0:[0,1]},
+ streaming:{0:[0],1:[1]},'voz-video':{0:[0],1:[1]},'mencao-grupos':{0:[0,1],1:[1]},'classif-historico':{0:[0],1:[1]},
+ 'funcoes-internas':{0:[0],1:[1]},latencia:{0:[0],1:[1],2:[2,3]},memoria:{0:[0],1:[1]},tratamento:{0:[0,3],1:[1,2]},
+ 'sair-voltar':{0:[0],1:[1,2]},'volume-dados':{0:[0,3],1:[1,2]},multiplas:{0:[1]},
+ 'relatorio-analytics':{0:[0],1:[1]},'relatorio-agente':{0:[0]},automacao:{0:[0],1:[2],2:[1],3:[3],4:[4],5:[5],6:[6],7:[7],8:[8]},
+ 'mod-oauth':{0:[0],1:[1,2]},'mod-mcp':{0:[0,2],1:[1]},'inbox-seg':{0:[0],1:[1]},'inbox-func':{0:[0,2],1:[1]},
+ dependencias:{0:[0],1:[1,2,3]},governanca:{0:[1,2,3],1:[0],2:[4],3:[5]},finops:{0:[0,1,2],1:[3,5],2:[4],3:[6]},seguranca:{0:[],1:[0,1,2],2:[3],3:[4]},lgpd:{0:[1],1:[0],2:[2],3:[3],4:[4]},
+ sheets:{0:[2],1:[0]},gcal:{0:[0]},gmail:{0:[2]},gdrive:{0:[0],1:[]},omail:{0:[0],1:[1]},ocal:{0:[0]},
+ onedrive:{0:[0],1:[]},notion:{0:[0],1:[1,2]},jira:{0:[0],1:[1]},teams:{0:[0,1]},sharepoint:{0:[0]},
+ pagamentos:{0:[0],1:[1],2:[2]},'auth-config':{0:[0],1:[1],2:[2],3:[3],4:[4],5:[5]},'llm-resiliencia':{0:[0],1:[1],2:[2],3:[3,4,7],4:[5,6]},escalabilidade:{0:[0],1:[1]},evals:{0:[0,1]},
+};
+const ACTRAW=[];
+ALL.forEach(d=>{
+  if(d.tipo==='frente'){(d.acoes||[]).forEach((a,ai)=>{const _L=LINKS[d.id]&&LINKS[d.id][ai];ACTRAW.push({prio:a[0],texto:a[1],jira:a[2],modulo:d.name,etapa:etapaOf(d),grupo:grupoOf(d),imp:d.impacto||[],theme:(d.achados||[]),resolved:_L?_L.map(fi=>(d.achados||[])[fi]).filter(Boolean):null});});}
+  else{(d.p0||[]).forEach((t,pi)=>{const _L=LINKS[d.id]&&LINKS[d.id][pi];ACTRAW.push({prio:'P0',texto:t,modulo:d.name,etapa:etapaOf(d),grupo:grupoOf(d),imp:d.impacto||[],theme:(d.riscos||[]),resolved:_L?_L.map(fi=>(d.riscos||[])[fi]).filter(Boolean):null});});}
+});
+function anorm(t){return t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+const JIRACARDS=[{a:"AV-1168",c:"AC-01",t:"Criptografar/tokenizar o CPF"},{a:"AV-1169",c:"AC-02",t:"Implementar a verificação de e-mail de verdade"},{a:"AV-1170",c:"AC-03",t:"Mensagem neutra (não revelar e-mail existente)"},{a:"AV-1172",c:"AC-04",t:"2FA/MFA (obrigatório p/ admin); política de senha mais forte"},{a:"AV-1173",c:"AC-05",t:"Lockout progressivo no login"},{a:"AV-1174",c:"AC-06",t:"Mitigar timing/enumeração"},{a:"AV-1176",c:"AC-07",t:"Revogar sessões/refresh ao redefinir a senha"},{a:"AV-1177",c:"AC-08",t:"Reduzir validade do token de reset (30–60 min) + guardar com hash"},{a:"AV-1178",c:"AC-09",t:"Limite de pedidos no forgot-password"},{a:"AV-1180",c:"AC-10",t:"Exigir email_verified e não vincular automaticamente conta local existente"},{a:"AV-1181",c:"AC-11",t:"Aplicar a trava de domínio (allowedEmailDomains) também no login social"},{a:"AV-1182",c:"AC-12",t:"Assinar o state do OAuth (HMAC, segredo obrigatório) + nonce/expiração"},{a:"AV-1183",c:"AC-13",t:"Entregar a sessão por cookie httpOnly/POST (sem token na URL)"},{a:"AV-1184",c:"AC-14",t:"Fixar x-forwarded-host / derivar o redirect de uma allowlist"},{a:"AV-1185",c:"AC-15",t:"Verificar o app no Google (OAuth consent) + CASA p/ Drive"},{a:"AV-1187",c:"AC-16",t:"Restringir convite/adição de membros ao dono (ou admin do comitê)"},{a:"AV-1188",c:"AC-17",t:"Aplicar cota/teto de custo no fan-out do comitê"},{a:"AV-1189",c:"AC-18",t:"Consentimento/escopo de dados no comitê (isolar conexões por agente/dono)"},{a:"AV-1190",c:"AC-19",t:"Levar as melhorias de latência do chat ao comitê + run assíncrono"},{a:"AV-1191",c:"AC-20",t:"Gerenciar a janela de contexto do comitê (resumo + memória)"},{a:"AV-1193",c:"AC-21",t:"Instruções de segurança padrão no system prompt"},{a:"AV-1194",c:"AC-22",t:"Localizar o prompt default (idioma pt-BR)"},{a:"AV-1196",c:"AC-23",t:"Desacoplar conta conectada de fonte associada"},{a:"AV-1197",c:"AC-24",t:"Política de cota fail-closed para limites de plano"},{a:"AV-1199",c:"AC-25",t:"Aposentar/redirecionar o \"train-agent\" stub para o pipeline real"},{a:"AV-1200",c:"AC-26",t:"Expor status de indexação + reduzir dependência da decisão do modelo"},{a:"AV-1202",c:"AC-27",t:"Consentimento no share (mostrar/limitar fontes e credenciais do receptor)"},{a:"AV-1203",c:"AC-28",t:"Transparência de quem paga o consumo + cota fail-closed (share)"},{a:"AV-1205",c:"AC-29",t:"Validação forte de tipo (+ auto-correção) e schema de fonte único"},{a:"AV-1206",c:"AC-30",t:"Alinhar tipos oferecidos × suportados + visibilidade de sincronização"},{a:"AV-1208",c:"AC-31",t:"Liberar fonte de pasta no Google (drive.readonly + reativar aba)"},{a:"AV-1209",c:"AC-32",t:"UX clara de re-seleção (escopo drive.file) + validação de tipo"},{a:"AV-1211",c:"AC-33",t:"Pedir os escopos da Microsoft ao conectar (Teams/SharePoint)"},{a:"AV-1212",c:"AC-34",t:"Subtipos / validação por tipo de fonte (Microsoft)"},{a:"AV-1214",c:"AC-35",t:"Validação/auto-correção de tipo (Jira) + consolidar schema"},{a:"AV-1216",c:"AC-36",t:"Auto-conexão de fonte Notion opt-in + governança das fontes criadas"},{a:"AV-1218",c:"AC-37",t:"Anti-SSRF (allowlist/bloqueio interno) + criptografar credenciais (MCP/API/Web)"},{a:"AV-1220",c:"AC-38",t:"Auditar as fontes de dados restantes"},{a:"AV-1222",c:"AC-39",t:"Corrigir o timeout de 30s do cliente (corta respostas longas)"},{a:"AV-1223",c:"AC-40",t:"Cancelar o backend quando o cliente desiste (timeout/aba fechada)"},{a:"AV-1225",c:"AC-41",t:"Usar a voz configurada do agente no TTS"},{a:"AV-1226",c:"AC-42",t:"Implementar a purga real de dados de emoção (voz/rosto)"},{a:"AV-1228",c:"AC-43",t:"Aplicar cota/custo em menção e grupo"},{a:"AV-1229",c:"AC-44",t:"Limitar/observar o fan-out de grupo"},{a:"AV-1231",c:"AC-45",t:"Auto-título (resumo da 1ª troca) + categorização da conversa"},{a:"AV-1232",c:"AC-46",t:"Filtros de histórico: data, agente, tag, favorito"},{a:"AV-1234",c:"AC-47",t:"Cota de imagem para agente pessoal (fail-closed)"},{a:"AV-1235",c:"AC-48",t:"Garantir base/memória sem depender da decisão do modelo"},{a:"AV-1237",c:"AC-49",t:"Tirar o filtro de contexto por IA do caminho crítico"},{a:"AV-1238",c:"AC-50",t:"Fallback de 2–3 níveis + medir tempo por etapa"},{a:"AV-1239",c:"AC-51",t:"Checar cota em paralelo (cache curto) + revisar teto de iterações"},{a:"AV-1241",c:"AC-52",t:"Disparar e injetar a memória de longo prazo no chat"},{a:"AV-1242",c:"AC-53",t:"Resumo automático antes do corte de histórico"},{a:"AV-1244",c:"AC-54",t:"Conectar o chat ao tradutor de erros já existente"},{a:"AV-1245",c:"AC-55",t:"Unificar os caminhos de stream + exibir a ferramenta em uso"},{a:"AV-1247",c:"AC-56",t:"Não cancelar a resposta ao trocar de tela (só no Stop explícito)"},{a:"AV-1248",c:"AC-57",t:"Corrigir TTL do marcador de stream + tornar o stream retomável"},{a:"AV-1250",c:"AC-58",t:"Indicadores no chat: documento resumido / K trechos / medidor de contexto"},{a:"AV-1251",c:"AC-59",t:"Avisar em truncamentos + garantir compactação antes do corte de 30"},{a:"AV-1253",c:"AC-60",t:"Interface de abas para múltiplas conversas"},{a:"AV-1255",c:"AC-61",t:"Substituir dados hardcoded do PDF de analytics por consultas reais"},{a:"AV-1256",c:"AC-62",t:"Unificar os caminhos de relatório (agente × analytics)"},{a:"AV-1258",c:"AC-63",t:"Ancorar relatório do agente em dados reais (tools/fontes) + indicar origem"},{a:"AV-1260",c:"AC-64",t:"Trava de instância única / idempotência no agendador"},{a:"AV-1261",c:"AC-65",t:"Teto de custo por automação"},{a:"AV-1263",c:"AC-66",t:"Assinar o state (HMAC) + verificar nonce server-side no OAuth"},{a:"AV-1264",c:"AC-67",t:"Tirar tokens da URL (cookie httpOnly/POST) + fixar x-forwarded-host"},{a:"AV-1266",c:"AC-68",t:"Criptografar credenciais de MCP/custom em repouso"},{a:"AV-1267",c:"AC-69",t:"Anti-SSRF no mcpUrl (allowlist + bloquear IP interno/metadata)"},{a:"AV-1269",c:"AC-70",t:"Corrigir IDOR do Inbox: usar só o userId do JWT"},{a:"AV-1270",c:"AC-71",t:"Proteger o create do Inbox (auth interno/rede; não @Public)"},{a:"AV-1272",c:"AC-72",t:"Aplicar a cota de armazenamento do Inbox na criação"},{a:"AV-1273",c:"AC-73",t:"Implementar Necessidade de Ação (action_required) no Inbox"},{a:"AV-1275",c:"AC-74",t:"verifyNoDependencies + cascata cross-service confiável na exclusão"},{a:"AV-1276",c:"AC-75",t:"Desconexão de integração limpando fontes + eliminação completa (LGPD)"},{a:"AV-1278",c:"AC-76",t:"Migrations compatíveis + fixar commit no deploy + CI a cada mudança"},{a:"AV-1279",c:"AC-77",t:"Consolidar schema em fonte única; separar dados por serviço"},{a:"AV-1280",c:"AC-78",t:"Definir/documentar dono das responsabilidades sobrepostas (começar por chat)"},{a:"AV-1281",c:"AC-79",t:"Limpeza da documentação (remover heranças do Replit + corrigir referências)"},{a:"AV-1283",c:"AC-80",t:"Atribuir custo auxiliar de IA ao cliente; rever cota fail-open"},{a:"AV-1284",c:"AC-81",t:"Idempotência por mensagem; fila com retentativa"},{a:"AV-1286",c:"AC-82",t:"Varredura de vulnerabilidades de dependências (SCA no CI)"},{a:"AV-1287",c:"AC-83",t:"Confirmar ações sensíveis + menor privilégio; SQL só-leitura; anti-SSRF"},{a:"AV-1288",c:"AC-84",t:"Row-Level Security no Postgres + testes de isolamento entre organizações"},{a:"AV-1289",c:"AC-85",t:"Remover .env do versionamento + secret scanning no pipeline"},{a:"AV-1291",c:"AC-86",t:"Rotina de eliminação completa de dados do usuário"},{a:"AV-1292",c:"AC-87",t:"Políticas de retenção para todos os dados (não só WhatsApp)"},{a:"AV-1293",c:"AC-88",t:"Contratos (DPA) + transparência sobre compartilhamento com terceiros"},{a:"AV-1294",c:"AC-89",t:"Canal de autoexclusão e portabilidade ao titular"},{a:"AV-1296",c:"AC-90",t:"Conectar o EduzzWebhookGuard à rota (HMAC sobre raw body) + segredo obrigatório em prod"},{a:"AV-1297",c:"AC-91",t:"Trocar sql.raw por bind parametrizado (Drizzle) em update-knowledge-offer"},{a:"AV-1298",c:"AC-92",t:"Gate de CI (testes + lint + build por PR) + cobertura mínima no pagamento"},{a:"AV-1300",c:"AC-93",t:"Registrar o ThrottlerGuard (antes do JWT) + @Throttle no /login"},{a:"AV-1301",c:"AC-94",t:"Remover fallbacks de JWT_SECRET (falhar boot se ausente) + fixar algoritmo"},{a:"AV-1302",c:"AC-95",t:"CORS com allowlist explícita de origens (sem \"*\")"},{a:"AV-1303",c:"AC-96",t:"Adicionar CSP + HSTS na resposta de produção"},{a:"AV-1304",c:"AC-97",t:"Implementar o AgentOwnerGuard de verdade (checar ownership)"},{a:"AV-1305",c:"AC-98",t:"Atualizar @nestjs/core + Dependabot/Renovate + pnpm audit no CI"},{a:"AV-1307",c:"AC-99",t:"Cadeia de fallback (principal → reserva → econômico garantido) + detecção por código/categoria"},{a:"AV-1308",c:"AC-100",t:"Levar retry/backoff + Retry-After ao caminho de streaming (chat ao vivo)"},{a:"AV-1309",c:"AC-101",t:"Limitador global por provedor/tier (token-bucket RPM + TPM)"},{a:"AV-1310",c:"AC-102",t:"Jitter no backoff do Bedrock; batching de embeddings por tokens; ler headers de quota"},{a:"AV-1311",c:"AC-103",t:"Revisar limite de entrada grande; considerar qualidade (não só preço) na troca por capacidade"},{a:"AV-1313",c:"AC-104",t:"Configurar pool (max, timeout, statement_timeout) por serviço"},{a:"AV-1314",c:"AC-105",t:"Criar índice vetorial (ivfflat/hnsw) na tabela de embeddings; revisar índices das consultas quentes"},{a:"AV-1316",c:"AC-106",t:"Harness de avaliação (golden dataset) por domínio, rodando a cada mudança relevante"},{a:"AV-1318",c:"AC-107",t:"Google Sheets: atualizar registro existente por chave"},{a:"AV-1319",c:"AC-108",t:"Google Sheets: renovação automática de login (token)"},{a:"AV-1321",c:"AC-109",t:"Calendar: consulta de disponibilidade (free/busy)"},{a:"AV-1323",c:"AC-110",t:"Gmail/Outlook: corrigir HTML do envio (preservar formatação)"},{a:"AV-1325",c:"AC-111",t:"Google Docs: leitura do texto do documento"},{a:"AV-1326",c:"AC-112",t:"Google Drive: salvar arquivo no Drive"},{a:"AV-1328",c:"AC-113",t:"Outlook Mail: anexos (+ markread/move/reply)"},{a:"AV-1330",c:"AC-114",t:"OneDrive: leitura de conteúdo dos arquivos"},{a:"AV-1331",c:"AC-115",t:"OneDrive: salvar arquivo"},{a:"AV-1333",c:"AC-116",t:"Notion: escrever no espaço (workspace) correto"},{a:"AV-1334",c:"AC-117",t:"Notion: correspondência exata (apagar/editar por id, não por nome)"},{a:"AV-1336",c:"AC-118",t:"Jira: conferir associação/escopo da fonte na leitura"},{a:"AV-1337",c:"AC-119",t:"Jira: corrigir criação de Épico (preencher Epic Name)"},{a:"AV-1339",c:"AC-120",t:"Microsoft Teams: pedir permissões ao conectar (+ aprovação de admin)"},{a:"AV-1341",c:"AC-121",t:"SharePoint: pedir permissões ao conectar"}];
+function _jnorm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\(ac-\d+\)/g,' ').replace(/\(rx-[a-z0-9-]+\)/g,' ').replace(/[^a-z0-9]+/g,' ').trim();}
+function _jtoks(s){return new Set(_jnorm(s).split(' ').filter(w=>w.length>1));}
+const _JCT=JIRACARDS.map(c=>({av:c.a,_t:_jtoks(c.t)}));
+function jiraFor(text){const q=_jtoks(text);let best=null,bs=0;for(const c of _JCT){let i=0;for(const x of q)if(c._t.has(x))i++;const d=(2*i)/(q.size+c._t.size||1);if(d>bs){bs=d;best=c;}}return bs>=0.5?best.av:null;}
+const AMAP={};
+ACTRAW.forEach(a=>{const k=anorm(a.texto);if(!AMAP[k])AMAP[k]={texto:a.texto,prio:a.prio,modulos:new Set(),etapas:new Set(),grupos:new Set(),imp:new Set(),findings:new Set(),sev:new Set(),resolved:new Set(),jira:new Set(),linked:false};const m=AMAP[k];m.modulos.add(a.modulo);if(a.jira)m.jira.add(a.jira);m.etapas.add(a.etapa);m.grupos.add(a.grupo);a.imp.forEach(x=>m.imp.add(x));(a.theme||[]).forEach(fr=>{if(fr)m.findings.add(fr[1]);});const _eff=a.resolved||a.theme||[];_eff.forEach(fr=>{if(fr&&fr[0])m.sev.add(fr[0]);});if(a.resolved){m.linked=true;a.resolved.forEach(fr=>{if(fr)m.resolved.add(fr[1]);});}if((PRIORANK[a.prio]||9)<(PRIORANK[m.prio]||9))m.prio=a.prio;});
+const SR3={critico:4,alto:3,medio:2,baixo:1};const ACTIONS=Object.values(AMAP).map((m,i)=>{const sx=[...m.sev].reduce((acc,b)=>(SR3[b]||0)>(SR3[acc]||0)?b:acc,'');const disp=m.linked?[...m.resolved]:[...m.findings];return {id:'AC-'+String(i+1).padStart(2,'0'),jira:(m.jira.size?[...m.jira]:(jiraFor(m.texto)?[jiraFor(m.texto)]:[])),texto:m.texto,prio:m.prio,prioRank:PRIORANK[m.prio]||9,modulos:[...m.modulos],etapas:[...m.etapas],grupo:[...m.grupos][0],grupos:[...m.grupos],imp:[...m.imp],findings:disp,linked:m.linked,reach:m.modulos.size,nfind:disp.length,sevMax:sx,sevRank:SR3[sx]||0};});
+const ACID={};ACTIONS.forEach(a=>{ACID[anorm(a.texto)]=a.id;});
+const ETG={};ALL.forEach(d=>{ETG[etapaOf(d)]=grupoOf(d);});
+const REPRO={
+ 'Corrigir o timeout de 30s do cliente':{r:'Faça uma pergunta cuja resposta passe de 30s (análise longa) — ela é cortada ao bater os 30s.',v:'Resposta de 60s+ completa sem corte; constante de timeout do cliente removida/elevada e alinhada ao backend.'},
+ 'Cancelar o backend quando o cliente desiste (timeout/aba fechada)':{r:'Inicie uma resposta e feche a aba; no log o backend segue gerando (custo) sem ninguém recebendo.',v:'Fechar a aba ou Stop encerra o stream no backend (log mostra cancelamento); sem geração órfã.'},
+ 'Tirar o filtro de contexto por IA do caminho crítico':{r:'Meça o tempo até o 1º token; observe 4–5 chamadas de IA em série antes de aparecer texto.',v:'Tempo até o 1º token cai (medir antes/depois); filtro de contexto roda fora do caminho crítico.'},
+ 'Disparar e injetar a memória de longo prazo no chat':{r:'Conte um fato, troque 30+ mensagens e pergunte sobre ele — o agente não lembra; Life Memory vazia no teste.',v:'Após 30+ msgs o agente recupera o fato; log mostra a memória consultada e injetada no prompt.'},
+ 'Conectar o chat ao tradutor de erros já existente':{r:'Force um erro no caminho síncrono (ferramenta/timeout) — aparece “algo deu errado” genérico.',v:'O mesmo erro mostra mensagem acionável e traduzida (pt/en/es) vinda do tradutor.'},
+ 'Não cancelar no unmount; só no Stop explícito — deixar o backend terminar/persistir':{r:'Enquanto o agente responde, navegue para outra tela e volte — aparece “você pediu pausa”/interrompido.',v:'Trocar de tela não cancela; ao voltar a resposta está completa (persistida no servidor).'},
+ 'Corrigir TTL do marcador; tornar o stream retomável':{r:'Volte a uma conversa logo após responder — o marcador “ativo” persiste ~15min e o FE adivinha/auto-cancela em 10s.',v:'Marcador limpa ao terminar; voltar re-attacha ao stream (ou refetch mostra completo) sem auto-cancel.'},
+ 'Unificar os caminhos de stream e exibir a ferramenta em uso':{r:'Durante uso de ferramenta/busca/compactação a UI não mostra nada (estados silenciosos).',v:'UI mostra “usando ferramenta / buscando / compactando”.'},
+ 'Indicadores no chat: documento resumido / K trechos / medidor de contexto':{r:'Anexe um documento grande ou peça algo da base — nada indica se foi resumido nem quantos trechos entraram.',v:'UI mostra “documento resumido (X/Y)”, “usei K trechos” e um medidor de contexto.'},
+ 'Avisar em truncamentos + garantir compactação antes do corte de 30':{r:'Resultado de ferramenta grande (40k chars) e histórico >30 msgs são cortados em silêncio.',v:'Truncamento avisa o usuário; compactação/resumo roda antes do corte.'},
+ 'Resumo automático antes do corte de histórico':{r:'Conversa com mais de 30 mensagens: as antigas somem do contexto sem resumo.',v:'Ao passar de 30, gera resumo e mantém o fio (teste citando um fato antigo).'},
+ 'Fallback de 2–3 níveis; medir tempo por etapa':{r:'Derrube o modelo primário — o fallback é de 1 nível e detecta erro por texto.',v:'Fallback de 2–3 níveis; painel com tempo por etapa.'},
+ 'Interface de abas para múltiplas conversas':{r:'Não dá para manter várias conversas ativas na tela (o backend já suporta salas).',v:'Abas permitem alternar entre conversas paralelas.'},
+ 'Usar a voz configurada do agente no TTS':{r:'Configure uma voz no agente e use áudio — a voz reproduzida não é a configurada.',v:'O TTS usa a voz configurada do agente.'},
+ 'Implementar a purga real de dados de emoção':{r:'Verifique o cleanup de dados de emoção — é stub e não apaga.',v:'A rotina apaga de fato os dados de emoção (teste com um registro).'},
+ 'Aplicar cota/custo em menção e grupo':{r:'Mencione vários agentes / dispare um grupo — o consumo não debita cota/custo.',v:'Menção e grupo debitam cota/custo no centro correto.'},
+ 'Limitar/observar o fan-out de grupo':{r:'Dispare um grupo grande — N agentes respondem em paralelo sem limite nem telemetria.',v:'Fan-out limitado e observável (limite + métrica).'},
+ 'Auto-título (resumo da 1ª troca) + categorização':{r:'Inicie conversas — ficam sem título/categoria úteis.',v:'Conversa ganha título automático e categoria.'},
+ 'Filtros de histórico: data, agente, tag, favorito':{r:'No histórico não há filtro por data, agente, tag ou favorito.',v:'Filtros disponíveis e funcionando.'},
+ 'Cota de imagem p/ agente pessoal (fail-closed)':{r:'Gere muitas imagens com um agente pessoal — não há teto (fail-open).',v:'Limite aplicado e bloqueia ao estourar (fail-closed).'},
+ 'Garantir base/memória sem depender da decisão do modelo':{r:'Pergunte algo que está na base — às vezes o agente não consulta (depende de a IA decidir).',v:'Base/memória são consultadas de forma determinística quando há fonte associada.'},
+ 'Criptografar/tokenizar o CPF':{r:'Consulte a tabela de usuários — o CPF está em texto puro.',v:'CPF cifrado/tokenizado; nenhuma leitura em claro no banco/logs.'},
+ 'Implementar a verificação de e-mail de verdade':{r:'Cadastre com um e-mail qualquer — entra sem confirmar o e-mail.',v:'Conta exige confirmação de e-mail antes de liberar o acesso.'},
+ 'Revogar sessões/refresh ao redefinir a senha':{r:'Logue em 2 dispositivos e troque a senha — a sessão antiga continua válida.',v:'Redefinir senha revoga as sessões/refresh tokens existentes.'},
+ 'Aposentar/redirecionar o "train-agent" stub para o pipeline real':{r:'Treine um agente com documento — a persistência/embedding é TODO e não grava.',v:'Treino persiste e gera embeddings reais; a busca recupera o conteúdo.'},
+ 'Consentimento no share: mostrar/limitar quais fontes/credenciais o receptor acessa':{r:'Compartilhe um agente — o receptor herda fontes/credenciais sem aviso nem limite.',v:'Tela de consentimento mostra e limita o que o receptor acessa; consumo lançado ao dono certo.'},
+ 'Validação forte de tipo (+ auto-correção); consolidar schema em fonte única':{r:'Crie uma fonte e veja o tipo gravado divergente (ex.: Jira gravado como education_platform).',v:'Tipo validado/auto-corrigido na criação; schema único.'},
+ 'Liberar fonte de pasta (drive.readonly + reativar aba)':{r:'No Google não há opção de fonte vinculada a uma pasta — adiciona arquivo por arquivo.',v:'Aba “Pastas” ativa; fonte de pasta varre e se auto-atualiza.'},
+ 'Pedir escopos ao conectar':{r:'Conecte Microsoft e tente Teams/SharePoint — falha por permissão não pedida ao conectar.',v:'A conexão pede os escopos; as ações de Teams/SharePoint funcionam.'},
+ 'Validação/auto-correção de tipo; consolidar schema':{r:'Crie uma fonte Jira e veja o tipo gravado errado.',v:'Tipo validado/auto-corrigido; schema único.'},
+ 'Anti-SSRF (allowlist/bloqueio interno) + criptografar credenciais':{r:'Aponte uma fonte Web/MCP para um IP interno (ex.: 169.254.169.254) — a requisição é feita; credencial em texto puro.',v:'Endereços internos bloqueados (allowlist); credenciais cifradas.'},
+ 'Substituir dados hardcoded por consultas reais (ou desativar até ter)':{r:'Gere o PDF de analytics — os números são fixos/fictícios no código.',v:'PDF usa consultas reais (ou o recurso fica desativado até ter dados).'},
+ 'Trava de instância única / idempotência no agendador':{r:'Rode 2 instâncias do serviço — a automação agendada dispara em dobro.',v:'Lock distribuído/idempotência garante 1 disparo por janela.'},
+ 'Criptografar credenciais de MCP/custom em repouso':{r:'Veja user_integrations — credencial de MCP/custom em texto puro.',v:'Credenciais cifradas em repouso.'},
+ 'Anti-SSRF no mcpUrl (allowlist + bloquear IP interno/metadata)':{r:'Cadastre um mcpUrl apontando para IP interno/metadata — é aceito.',v:'mcpUrl interno/metadata bloqueado por allowlist.'},
+ 'Corrigir IDOR: usar só o userId do JWT':{r:'Chame o Inbox passando o userId de outro usuário no query — retorna dados alheios.',v:'O endpoint ignora o userId do query e usa só o do JWT.'},
+ 'Proteger o create (auth interno/rede; não @Public)':{r:'Faça POST em /messages sem autenticação — cria item (rota @Public).',v:'O create exige auth interno/rede; não é mais público.'},
+ 'Implementar verifyNoDependencies + cascata cross-service confiável':{r:'Exclua um agente com automações/conexões — vira órfão (verifyNoDependencies é TODO vazio).',v:'A exclusão checa dependências e cascateia entre serviços de forma confiável (idempotente).'},
+ 'Migrations compatíveis + fixar commit + CI a cada mudança':{r:'Um deploy quebra serviço que ninguém mexeu; testes não rodam sozinhos antes de publicar.',v:'Migrations compatíveis; deploy fixa o commit; CI roda testes a cada mudança.'},
+ 'Atribuir custo auxiliar; rever cota fail-open':{r:'Chamadas auxiliares de IA não aparecem na cobrança; com a checagem de cota falhando, libera mesmo assim.',v:'Custo auxiliar atribuído ao cliente; cota passa a fail-closed.'},
+ 'Varredura de vulnerabilidades de dependências':{r:'Não há scan de dependências no pipeline.',v:'SCA roda no CI e falha em vulnerabilidade crítica.'},
+ 'Atualizar por chave':{r:'Peça para atualizar um registro existente por chave — só adiciona uma linha nova.',v:'Atualiza a linha correta localizando pela chave.'},
+ 'Renovação de login':{r:'Use o Sheets por tempo prolongado — falha no meio (token não renova).',v:'Login renova automaticamente; sem falha por expiração.'},
+ 'Consulta de disponibilidade':{r:'Peça para agendar evitando conflitos — o agente não consulta livre/ocupado.',v:'Agente consulta disponibilidade (free/busy) e evita conflito.'},
+ 'Corrigir HTML do envio':{r:'Envie um e-mail com formatação — chega sem formatação (HTML descartado).',v:'O e-mail enviado preserva o HTML/formatação.'},
+ 'Leitura de Doc':{r:'Aponte um Google Doc como fonte e peça o conteúdo — o agente só vê o link/metadados.',v:'O agente lê o texto do Doc.'},
+ 'Salvar no Drive':{r:'Peça para salvar um arquivo gerado no Drive — não grava.',v:'O arquivo é salvo no Drive.'},
+ 'Anexos':{r:'Envie um e-mail com anexo pelo Outlook — não anexa.',v:'O e-mail envia com anexo.'},
+ 'Leitura de conteúdo':{r:'Peça o conteúdo de um arquivo do OneDrive — só vem metadados.',v:'O agente lê o conteúdo do arquivo.'},
+ 'Salvar arquivo':{r:'Peça para salvar um arquivo no OneDrive — não grava.',v:'O arquivo é salvo no OneDrive.'},
+ 'Escrever no espaço certo':{r:'Com mais de um workspace no Notion, edições vão para o primeiro.',v:'A escrita vai para o workspace selecionado.'},
+ 'Correspondência exata':{r:'Apague/edite “por nome” no Notion — pega a página errada.',v:'Correspondência exata por id; sem atingir o alvo errado.'},
+ 'Conferir associação na leitura':{r:'Leia uma issue do Jira fora do escopo configurado — retorna mesmo assim.',v:'A leitura respeita a associação/escopo da fonte.'},
+ 'Corrigir criação de Épico':{r:'Crie um Épico no Jira — falha porque o campo “Epic Name” não é preenchido.',v:'Épico criado com o campo obrigatório preenchido.'},
+ 'Pedir permissões ao conectar (+admin)':{r:'Conecte o Teams e tente ler/postar num canal — falha por permissão.',v:'A conexão pede os escopos (+ aprovação de admin); as ações do Teams funcionam.'},
+ 'Pedir permissões ao conectar':{r:'Conecte o SharePoint e tente ler/salvar — falha por permissão não concedida.',v:'A conexão pede os escopos; ler/salvar no SharePoint funciona.'},
+};
+const af={grupo:'Tudo',sev:'Todos',prio:'Todos',imp:'Tudo',etapa:'Tudo',q:''};
+let asort={key:'prioRank',dir:1};
+const A_GRUPOS=['Tudo','Jornada','Consumo','Bastidores'],A_SEV=['Todos','critico','alto','medio','baixo'],A_PRIO=['Todos','P0','P1','P2','Estrutural'],A_IMP=['Tudo','Experiência','Custo','Segurança','Conformidade','Estabilidade'];
+function aChips(elId,arr,key){document.getElementById(elId).innerHTML=arr.map(v=>`<button class="chip ${af[key]===v?'on':''}" data-k="${key}" data-v="${v}">${v==='critico'?'Crítico':v==='alto'?'Alto':v==='medio'?'Médio':v==='baixo'?'Baixo':v}</button>`).join('');}
+function aFiltersInit(){
+  aChips('fa-grupo',A_GRUPOS,'grupo');aChips('fa-sev',A_SEV,'sev');aChips('fa-prio',A_PRIO,'prio');aChips('fa-imp',A_IMP,'imp');
+  const cur=document.getElementById('fa-etapa').value||'Tudo';
+  const stageOrder={};STAGES.filter(s=>!s.tx).forEach((s,i)=>stageOrder[s.name]=i);
+  const allEt=new Set();ACTIONS.forEach(a=>a.etapas.forEach(e=>allEt.add(e)));
+  const byG={Jornada:[],Consumo:[],Bastidores:[]};allEt.forEach(e=>{const g=ETG[e]||'Jornada';(byG[g]||byG.Jornada).push(e);});
+  byG.Jornada.sort((a,b)=>(stageOrder[a]??99)-(stageOrder[b]??99));byG.Consumo.sort((a,b)=>a.localeCompare(b));byG.Bastidores.sort((a,b)=>a.localeCompare(b));
+  const opt=e=>`<option value="${e}" ${e===cur?'selected':''}>${e}</option>`;
+  let html='<option value="Tudo">Tudo</option>';
+  if(byG.Jornada.length)html+=`<optgroup label="Jornada do usuário">${byG.Jornada.map(opt).join('')}</optgroup>`;
+  if(byG.Consumo.length)html+=`<optgroup label="Consumo (integrações)">${byG.Consumo.map(opt).join('')}</optgroup>`;
+  if(byG.Bastidores.length)html+=`<optgroup label="Bastidores">${byG.Bastidores.map(opt).join('')}</optgroup>`;
+  document.getElementById('fa-etapa').innerHTML=html;
+  document.querySelectorAll('#acoes .lista-tools .chip').forEach(b=>b.onclick=()=>{af[b.dataset.k]=b.dataset.v;aFiltersInit();renderAcoes();});
+  document.getElementById('fa-etapa').onchange=e=>{af.etapa=e.target.value;renderAcoes();};
+  document.getElementById('fa-q').oninput=e=>{af.q=e.target.value;renderAcoes();};
+  document.querySelectorAll('#acoes table.actions thead th').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;asort.dir=(asort.key===k)?-asort.dir:1;asort.key=k;renderAcoes();});
+}
+function aMatch(a){if(af.grupo!=='Tudo'&&!a.grupos.includes(af.grupo))return false;if(af.sev!=='Todos'&&a.sevMax!==af.sev)return false;if(af.prio!=='Todos'&&a.prio!==af.prio)return false;if(af.imp!=='Tudo'&&!a.imp.includes(af.imp))return false;if(af.etapa!=='Tudo'&&!a.etapas.includes(af.etapa))return false;if(af.q&&!(a.texto+' '+a.modulos.join(' ')).toLowerCase().includes(af.q.toLowerCase()))return false;return true;}
+function renderAcoes(){
+  let rows=ACTIONS.filter(aMatch);
+  const k=asort.key;rows.sort((a,b)=>{let x=a[k],y=b[k];if(typeof x==='string'){x=x.toLowerCase();y=(''+y).toLowerCase();}if(x<y)return -1*asort.dir;if(x>y)return 1*asort.dir;return 0;});
+  document.getElementById('acount').textContent=`${rows.length} ação(ões)`;
+  document.getElementById('acoes-body').innerHTML=rows.map(a=>{
+    const areas=a.modulos.map(m=>`<span class="cimp">${m}</span>`).join('');
+    const impChips=a.imp.length?a.imp.map(i=>`<span class="cimp">${i}</span>`).join(''):'<span class="cetapa">—</span>';
+    const sevtag=a.sevMax?`<span class="sevtag ${a.sevMax}">${a.sevMax==='critico'?'Crítico':a.sevMax==='alto'?'Alto':a.sevMax==='medio'?'Médio':'Baixo'}</span>`:'<span class="cetapa">—</span>';
+    const idcell=`<code class="fid" title="Copiar ID" onclick="event.stopPropagation();navigator.clipboard&&navigator.clipboard.writeText('${a.id}');this.classList.add('copied');this.textContent='copiado!';setTimeout(()=>{this.classList.remove('copied');this.textContent='${a.id}'},900)">${a.id}</code>`;
+    const jiracell=(a.jira&&a.jira.length)?'<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">'+a.jira.map(k=>`<a href="https://eduzzjira.atlassian.net/browse/${k}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-size:10px;font-family:ui-monospace,monospace;color:#5b9dff;text-decoration:none;border:1px solid rgba(120,150,200,.35);border-radius:5px;padding:1px 5px">${k}</a>`).join('')+'</div>':'';
+    const main=`<tr class="frow" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')"><td>${idcell}${jiracell}</td><td><span class="rcaret">▸</span><span class="cgrupo ${a.grupo}">${a.grupos.join(' / ')}</span></td><td><div class="cmod">${areas}</div><div class="cetapa">${a.linked?`fecha ${a.nfind} achado(s)`:`${a.nfind} achados no mesmo tema`}</div></td><td>${a.texto}</td><td class="hidecol">${impChips}</td><td>${sevtag}</td><td><span class="pprio ${a.prio}">${a.prio}</span></td></tr>`;
+    const fl=a.findings.length?a.findings.map(t=>`<li>${t}</li>`).join(''):(a.linked?'<li style="color:var(--faint)">Ação preventiva / de capacidade — não fecha um achado específico listado.</li>':'<li>—</li>');
+    const rp=REPRO[a.texto];
+    const rpHtml=rp?`<div class="fdline"><span class="fdlbl">Como reproduzir</span><span class="v">${rp.r}</span></div><div class="fdline"><span class="fdlbl">Validar — pronto quando</span><span class="v">${rp.v}</span></div>`:`<div class="fdline"><span class="fdlbl">Reproduzir / validar</span><span class="v" style="color:var(--faint)">a detalhar no refinamento</span></div>`;
+    const _lbl=a.linked?'Resolve (achados que fecha)':'Achados do mesmo tema';const _ctx=a.linked?'':'<div style="color:var(--faint);font-size:11.5px;margin-bottom:4px">Achados do mesmo módulo (contexto) — não necessariamente todos resolvidos por esta ação.</div>';
+    const detail=`<tr class="fdetail"><td colspan="7"><div class="fd">${rpHtml}<div class="fdline"><span class="fdlbl">${_lbl}</span><span class="v">${_ctx}<ul class="li" style="margin:0">${fl}</ul></span></div><div class="fdline"><span class="fdlbl">Onde aparece</span><span class="v">${areas}</span></div></div></td></tr>`;
+    return main+detail;
+  }).join('');
+}
+const DEPS=[
+ {root:'Banco compartilhado / schema duplicado',rel:'é raiz de',items:['Deploys que quebram','Eliminação incompleta (LGPD)','Exclusão deixa órfãos','Fonte com tipo errado','Amplia o raio de um incidente de segurança']},
+ {root:'Estratégia de escopo OAuth',rel:'destrava',items:['Google: fonte de pasta','Teams + SharePoint','Gmail: organizar marcadores','Influencia: reconectar sem perder fontes']},
+ {root:'Resolução / armazenamento de credencial',rel:'causa',items:['Reconectar perde as fontes','Credencial de MCP/API em texto puro','Sem refresh nos executores Google']},
+ {root:'Ciclo do stream + bug do marcador (chat)',rel:'leva a',items:['Sair da tela = “você pediu pausa”','FE adivinha e auto-cancela em 10s','Timeout de 30s corta a resposta','Stream não retomável ao voltar']},
+ {root:'Recursos “opcionais demais” (o modelo decide)',rel:'causa',items:['Memória de longo prazo não usada','Base de conhecimento não consultada','Tradutor de erros ignorado','Volume de dados sem clareza']},
+ {root:'Cota fail-open',rel:'permite',items:['Criar agente acima do limite','Imagem pessoal sem teto','Menção/grupo furam a cota']},
+ {root:'Sem idempotência / trava distribuída',rel:'causa',items:['Automação dispara em dobro']},
+];
+const HANDOFF={
+ verdict:{rec:'NO-GO temporário',score:30,proj:'Cumpridas CP1–CP6, a projeção migra para GO condicional (55–69). A base de engenharia é madura e o caminho de correção é curto.'},
+ pilares:[['Qualidade de código',20],['Testes de sistema',40],['Performance / Resiliência',40],['Segurança',20]],
+ cp:[
+  {id:'CP1',sev:'critico',tipo:'Integridade · pré-handoff',prazo:'Imediato',cond:'Conectar o EduzzWebhookGuard à rota /webhooks/eduzz (HMAC sobre o raw body) + descomentar a validação no handler',crit:'Webhook sem assinatura → 401; com assinatura válida processa; teste unitário do guard verde'},
+  {id:'CP2',sev:'alto',tipo:'Auth · pré-handoff',prazo:'Imediato',cond:'Registrar o ThrottlerGuard como APP_GUARD (antes do JWT) + @Throttle no /login',crit:'Burst de 35 logins inválidos retorna ≥1× 429 após o limite (re-teste ao vivo)'},
+  {id:'CP3',sev:'alto',tipo:'Injection · pré-handoff',prazo:'Imediato',cond:'Substituir sql.raw com valor de usuário por bind parametrizado em update-knowledge-offer',crit:'Zero interpolação de valor em sql.raw; payload "; DROP" não injeta'},
+  {id:'CP4',sev:'alto',tipo:'Auth',prazo:'≤ 15 dias',cond:'Remover fallbacks de JWT_SECRET (3 serviços), falhar o boot se ausente, fixar algoritmo no verify',crit:'grep do secret padrão = 0; boot sem JWT_SECRET falha; alg=none rejeitado'},
+  {id:'CP5',sev:'alto',tipo:'Config',prazo:'≤ 15 dias',cond:'CORS com allowlist explícita de origens (sem default "*") em agent-intelligence e b2b',crit:'Access-Control-Allow-Origin em prod = origem allowlistada, nunca "*"'},
+  {id:'CP6',sev:'alto',tipo:'Config',prazo:'≤ 15 dias',cond:'Adicionar CSP + HSTS na resposta de produção (nginx prod / CloudFront)',crit:'curl -I https://app.../ retorna Content-Security-Policy e Strict-Transport-Security'},
+  {id:'CP-RL1',sev:'alto',tipo:'Resiliência',prazo:'Pré / curto',cond:'Cobrir o caminho de streaming com retry/backoff + Retry-After (retry no mesmo modelo antes do salto cross-provider)',crit:'429 simulado → streaming faz ≥1 retry com backoff antes de erro/fallback'},
+ ],
+ pa:[
+  {id:'PA4',sev:'alto',tipo:'FinOps/Resiliência',prazo:'90d',cond:'Cota de LLM fail-closed (ou teto de emergência) + alerta ao acionar',crit:'Falha na checagem de cota → request negada; alerta disparado'},
+  {id:'PA5',sev:'alto',tipo:'Resiliência',prazo:'90d',cond:'Fallback de LLM em cadeia (principal→reserva→econômico garantido) + detecção por código de erro + retry com backoff',crit:'Matriz sem reserva ainda resolve via último recurso; 5xx dispara fallback'},
+  {id:'PA1',sev:'alto',tipo:'Segurança',prazo:'90d',cond:'Tool de DB: credencial somente-leitura + validação por parser SQL (allowlist); bloquear multi-statement',crit:'WITH x AS (DELETE...) rejeitada; conexão sem permissão de escrita'},
+  {id:'PA2',sev:'alto',tipo:'Segurança',prazo:'90d',cond:'Guard de SSRF nas tools de scrape/crawl (bloquear IP privado/loopback/metadata; re-validar após redirect)',crit:'fetch a 169.254.169.254 e 10/8, 192.168/16 bloqueado'},
+  {id:'PA6',sev:'alto',tipo:'Segurança/LGPD',prazo:'120d',cond:'RLS no Postgres + testes de isolamento entre orgs + prover 2º tenant para teste runtime',crit:'Policy RLS ativa; teste cross-tenant runtime executado e verde'},
+  {id:'PA7',sev:'alto',tipo:'LGPD',prazo:'180d',cond:'Cifrar CPF/CNPJ em repouso + self-service de exclusão/portabilidade + política de retenção (chat web/memória/embeddings)',crit:'CPF cifrado; rota de exclusão; cron de retenção além do WhatsApp'},
+  {id:'PA3',sev:'medio',tipo:'Segurança/IA',prazo:'120d',cond:'Defesa em profundidade contra prompt injection: menor privilégio por tool, confirmação humana p/ ações que escrevem/enviam, auditoria de tool call',crit:'Ação sensível exige confirmação; log de toda invocação de tool'},
+  {id:'PA8',sev:'medio',tipo:'Qualidade',prazo:'90d',cond:'Gate de CI (test+lint+build por PR, todos os serviços) + coverageThreshold, priorizando pagamento',crit:'PR com teste falho bloqueia merge; threshold de cobertura em payments'},
+  {id:'PA10',sev:'medio',tipo:'Resiliência',prazo:'120d',cond:'Idempotência por messageId nos consumidores + trocar fire-and-forget crítico por fila com retry+alerta',crit:'Reprocessamento não duplica resposta/cobrança'},
+  {id:'PA11',sev:'medio',tipo:'Arquitetura/Perf',prazo:'180d',cond:'Fonte única de schema (eliminar stubs) + pool de conexões com max/timeout + índice vetorial (ivfflat/hnsw)',crit:'1 fonte de schema; pool configurado; índice vetorial criado'},
+  {id:'PA9',sev:'medio',tipo:'Dependências',prazo:'30d',cond:'pnpm up @nestjs/core + Dependabot/Renovate + pnpm audit no CI',crit:'pnpm audit = 0 High; bot de update ativo'},
+  {id:'PA-RL2',sev:'medio',tipo:'Resiliência/FinOps',prazo:'90d',cond:'Limitador global por provedor/tier (token-bucket RPM+TPM) antes das chamadas de chat',crit:'Sob carga acima do tier, requisições são enfileiradas; 0 storms de 429'},
+  {id:'PA-RL3',sev:'medio',tipo:'Resiliência',prazo:'90d',cond:'Batching de embeddings por tokens (orçar TPM) + ler x-ratelimit-remaining-tokens para frear antes do 429',crit:'Lote de docs longos não excede o TPM do tier; freio antes do 429'},
+  {id:'PA-RL4',sev:'medio',tipo:'Resiliência',prazo:'30d',cond:'Jitter no backoff do Bedrock (paridade com OpenAI)',crit:'Bedrock aplica jitter ±50%; sem re-tentativas em lockstep'},
+  {id:'PA12',sev:'baixo',tipo:'Performance',prazo:'120d',cond:'Frontend: manualChunks (vendor) + subset/preconnect do Font Awesome + medir CWV reais',crit:'Entry JS reduzido; LCP/INP/CLS medidos'},
+  {id:'PA-RL5',sev:'baixo',tipo:'Resiliência',prazo:'120d',cond:'Distinguir 429 (cota) de overload do provedor + dimensionar max_tokens do Bedrock ao caso real',crit:'Telemetria separa rate-limit de overload; max_tokens ≈ necessidade real'},
+ ],
+};
+function hfState(){try{return JSON.parse(localStorage.getItem('afl-handoff')||'{}')}catch(e){return {};}}
+function hfToggle(id){try{const st=hfState();st[id]=!st[id];localStorage.setItem('afl-handoff',JSON.stringify(st));}catch(e){}renderHandoff();}
+function hfCard(c,st){const sl=c.sev==='critico'?'Crítico':c.sev==='alto'?'Alto':c.sev==='medio'?'Médio':'Baixo';const done=st[c.id];return `<div class="hf-card ${done?'done':''}" onclick="hfToggle('${c.id}')"><span class="hid">${c.id}</span> <span class="sevtag ${c.sev}">${sl}</span><div class="cond">${c.cond}</div><div class="crit"><b>Pronto quando:</b> ${c.crit}</div><div class="meta2">${c.tipo} · ${c.prazo}</div><div class="st">${done?'✓ concluído':'pendente'}</div></div>`;}
+function renderHandoff(){const st=hfState();const v=HANDOFF.verdict;
+ const pil=HANDOFF.pilares.map(p=>`<div class="b"><div class="l">${p[0]}</div><div class="n" style="color:${p[1]<40?'var(--hi)':p[1]<70?'var(--mid)':'var(--ok)'}">${p[1]}<small style="color:var(--faint);font-weight:400">/100</small></div></div>`).join('');
+ const cpDone=HANDOFF.cp.filter(c=>st[c.id]).length, paDone=HANDOFF.pa.filter(c=>st[c.id]).length;
+ const verdict=`<div class="hf-verdict"><div class="rec">🔴 ${v.rec}<span class="score">${v.score}/100</span></div><div class="proj">${v.proj}</div><div class="hf-pil">${pil}</div></div>`;
+ const cpHtml=`<div class="hf-prog">Condições precedentes — ${cpDone} de ${HANDOFF.cp.length} concluídas</div><div class="hf-sec">🔒 Precedentes (pré-handoff · curto prazo, alto risco)</div><div class="hf-grid">${HANDOFF.cp.map(c=>hfCard(c,st)).join('')}</div>`;
+ const paHtml=`<div class="hf-sec" style="margin-top:24px">🛠️ Pós-handoff (sustentação · 30–180d) — ${paDone} de ${HANDOFF.pa.length} concluídas</div><div class="hf-grid">${HANDOFF.pa.map(c=>hfCard(c,st)).join('')}</div>`;
+ document.getElementById('handoff-host').innerHTML=verdict+cpHtml+paHtml;
+}
+function renderDeps(){document.getElementById('depmap').innerHTML=DEPS.map(d=>`<div class="deproot"><div class="drhead">${d.root}</div><div class="drrel">${d.rel} →</div><div class="dritems">${d.items.map(i=>`<span class="dritem">${i}</span>`).join('')}</div></div>`).join('');}
+document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(b.dataset.v).classList.add('on');if(b.dataset.v==='deps')renderDeps();window.scrollTo({top:0,behavior:'smooth'});});
+kpis();renderJourney();renderConsumo();trans();road();lFiltersInit();renderLista();aFiltersInit();renderAcoes();renderFontes();renderHandoff();renderDeps();
+</script>
+</body>
+</html>
