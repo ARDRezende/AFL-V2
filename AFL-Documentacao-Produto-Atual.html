@@ -1,0 +1,240 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AFL — Documentação de Produto (Versão Atual)</title>
+<style>
+:root{--bg:#0f1115;--surface:#171a21;--surface2:#1f2430;--line:#2a3140;--text:#e8eaed;--muted:#a3acbd;--accent:#7c6cff;--accent-soft:rgba(124,108,255,.14);--ativo:#3ec97a;--ativo-bg:rgba(62,201,122,.14);--parcial:#e0a13a;--parcial-bg:rgba(224,161,58,.16);--off:#8a93a6;--off-bg:rgba(138,147,166,.16)}
+@media (prefers-color-scheme: light){:root{--bg:#f5f6f8;--surface:#ffffff;--surface2:#f0f2f6;--line:#e2e6ee;--text:#1b1f27;--muted:#5b6473;--accent:#5a4be0;--accent-soft:rgba(90,75,224,.10);--ativo:#1f9d57;--ativo-bg:#e6f5ec;--parcial:#b87914;--parcial-bg:#fbf0dc;--off:#6a7384;--off-bg:#eef1f5}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.layout{display:grid;grid-template-columns:258px 1fr;max-width:1240px;margin:0 auto}
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:26px 16px 50px;border-right:1px solid var(--line)}
+nav.side .brand{font-weight:700;font-size:16px}nav.side .brand span{color:var(--accent)}
+nav.side .sub{color:var(--muted);font-size:12px;margin:2px 0 18px}
+nav.side a{display:block;color:var(--muted);font-size:13.5px;padding:5px 10px;border-radius:8px}
+nav.side a:hover{color:var(--text);background:var(--surface);text-decoration:none}
+nav.side a.group{margin-top:14px;color:var(--text);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.07em}
+main{padding:40px 44px 100px;min-width:0}
+header.top h1{font-size:30px;font-weight:600;margin:0 0 8px}
+header.top p.lead{color:var(--muted);margin:0;max-width:74ch}
+.meta{display:flex;flex-wrap:wrap;gap:9px;margin:20px 0 4px}
+.meta .tag{font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:4px 11px;border-radius:999px}
+.meta .tag.on{background:var(--ativo-bg);color:var(--ativo);border-color:transparent;font-weight:600}
+.note{background:var(--accent-soft);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:14px 18px;margin:24px 0;font-size:14.5px}
+section.block{border-top:1px solid var(--line);margin-top:44px;padding-top:8px;scroll-margin-top:18px}
+h2.sec{font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:6px 0 4px}
+h3.mod{font-size:22px;font-weight:600;margin:6px 0 4px}
+.pmod{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;margin-left:10px;vertical-align:middle}
+.pmod.on{color:var(--ativo);background:var(--ativo-bg)}.pmod.parcial{color:var(--parcial);background:var(--parcial-bg)}.pmod.novo{color:var(--accent);background:var(--accent-soft)}
+p.desc{color:var(--muted);margin:6px 0 4px;max-width:80ch}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;margin-left:8px;color:var(--ativo);background:var(--ativo-bg)}
+.pill.parcial{color:var(--parcial);background:var(--parcial-bg)}
+.pill.novo{color:var(--accent);background:var(--accent-soft)}
+ul.feat{list-style:none;margin:16px 0 6px;padding:0;display:grid;gap:9px}
+ul.feat li{display:flex;gap:11px;align-items:flex-start;padding:12px 15px;background:var(--surface);border:1px solid var(--line);border-radius:11px;font-size:14.5px}
+ul.feat li .dot{flex:0 0 auto;margin-top:8px;width:7px;height:7px;border-radius:50%;background:var(--ativo)}
+ul.feat li .dot.p{background:var(--parcial)}
+table.grid{width:100%;border-collapse:collapse;margin-top:16px;font-size:13.5px}
+table.grid th,table.grid td{padding:9px 12px;border:1px solid var(--line);text-align:center}
+table.grid th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;background:var(--surface)}
+table.grid td:first-child,table.grid th:first-child{text-align:left}
+table.grid .yes{color:var(--ativo);font-weight:700}table.grid .no{color:var(--muted)}table.grid .part{color:var(--parcial);font-weight:700}
+dl.gloss dt{font-weight:600;margin-top:13px;font-size:15px}
+dl.gloss dd{margin:3px 0 0;color:var(--muted);font-size:14px;max-width:84ch}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card b{display:block;font-weight:600;margin-bottom:3px}.card span{color:var(--muted);font-size:13.5px}
+.parked{background:var(--off-bg);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:8px;font-size:14px;color:var(--muted)}
+.parked b{color:var(--text)}.parked ul{margin:8px 0 0;padding-left:18px}.parked li{margin:3px 0}
+footer{margin-top:54px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+.sm-legend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:6px 0 14px;font-size:12.5px;color:var(--muted)}
+.sm-legend i.sm-dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;background:var(--ativo)}
+.sm-legend i.sm-dot.p{background:var(--parcial)}
+.sm-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:14px}
+.sm-col{flex:0 0 188px;display:flex;flex-direction:column;gap:8px}
+.sm-bb{background:var(--accent);color:#fff;border-radius:10px;padding:10px 12px;font-weight:600;font-size:13.5px;line-height:1.25}
+.sm-bb span{display:block;font-weight:500;font-size:11px;opacity:.85;margin-top:2px}
+.sm-col-heart .sm-bb{background:#e0533a}
+.sm-card{background:var(--ativo-bg);border:1px solid var(--line);border-left:4px solid var(--ativo);border-radius:9px;padding:9px 11px;font-size:12.8px;line-height:1.35;color:var(--text)}
+.sm-card.novo{border-left-color:var(--accent)}
+.sm-card.partial{background:var(--parcial-bg);border-left-color:var(--parcial)}
+@media(max-width:900px){.layout{grid-template-columns:1fr}nav.side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}main{padding:26px 18px 80px}}
+</style></head><body>
+<div class="layout">
+<nav class="side">
+  <div class="brand">Agents for <span>Life</span></div>
+  <div class="sub">Documentação de Produto · Versão atual</div>
+  <a href="#intro">Visão geral</a>
+  <a href="#storymap">Story map</a>
+  <a href="#glossario">Glossário</a>
+  <a href="#perfis">Perfis &amp; matriz</a>
+  <a href="#plataforma">Recursos transversais</a>
+  <a href="#canais">Canais</a>
+  <a class="group">Módulos</a>
+  <a href="#contas">Contas &amp; acesso</a>
+  <a href="#agentes">Agentes de IA</a>
+  <a href="#conversa">Conversa</a>
+  <a href="#automacao">Automação &amp; integrações</a>
+  <a href="#skills">Skills</a>
+  <a href="#analytics">Analytics &amp; monitoramento</a>
+  <a href="#conta">Conta &amp; produtividade</a>
+  <a href="#admin">Administração</a>
+  <a href="#sistema">Sistema &amp; acesso</a>
+  <a href="#organizacoes">Organizações (B2B)</a>
+  <a class="group">Sobre</a>
+  <a href="#fora">Fora da versão atual</a>
+  <a href="#cobertura">Notas</a>
+</nav>
+<main>
+  <header class="top" id="intro">
+    <h1>Agents for Life — Documentação de Produto</h1>
+    <p class="lead">Documentação funcional com base no <b>repositório atual</b>, refletindo a triagem do time de produto: o que está <b>disponível</b>, o que é <b>parcial</b> e o que segue fora da versão. Plataforma de agentes de IA: criação e nutrição de agentes com base de conhecimento, skills, automações e integrações, analytics e administração.</p>
+    <div class="meta">
+      <span class="tag">Base: repositório atual (jun/2026)</span>
+      <span class="tag on">Status confirmado pelo PM</span>
+      <span class="tag">9 módulos disponíveis · 2 parciais</span>
+    </div>
+    <div class="note"><b>O que mudou nesta revisão.</b> Promovidos a <b>disponível</b>: Cadastro com ativação, Life Memory e o módulo <b>Skills</b> inteiro. Novos módulos <b>parciais</b>: Organizações (B2B) + Animus e Canais (Slack/Telegram/Alexa). Integrações novas liberadas: Microsoft 365, Jira, Telegram e Databricks Genie. O que existe no código mas segue fora está na seção <a href="#fora">Fora da versão atual</a>.</div>
+  </header>
+
+  <section class="block" id="storymap">
+    <h2 class="sec">Mapa do produto</h2>
+    <h3 class="mod">User Story Map — versão atual</h3>
+    <p class="desc">A jornada do usuário da esquerda para a direita. Inclui o que está disponível e o que é parcial (B2B e Canais).</p>
+    <div class="sm-legend"><span><i class="sm-dot"></i>Disponível</span><span><i class="sm-dot p"></i>Parcial</span><span style="margin-left:auto;font-style:italic">→ role na horizontal</span></div>
+    <div class="sm-board">
+      <div class="sm-col"><div class="sm-bb">Descobrir &amp; Acessar<span>Jornada 01</span></div><div class="sm-card">Explorar agentes</div><div class="sm-card">Login (e-mail + social)</div><div class="sm-card novo">Cadastro com ativação</div></div>
+      <div class="sm-col"><div class="sm-bb">Criar o Agente<span>Jornada 02</span></div><div class="sm-card">Configurar (LLM + personalidade)</div><div class="sm-card">Avatar + voz</div></div>
+      <div class="sm-col"><div class="sm-bb">Ensinar &amp; Nutrir<span>Jornada 02</span></div><div class="sm-card">Conhecimento (RAG)</div><div class="sm-card">Treinamento / ensino</div><div class="sm-card">Importação por IA</div></div>
+      <div class="sm-col"><div class="sm-bb">Conectar<span>Jornadas 03–04</span></div><div class="sm-card">Google, Notion, HubSpot, MCP</div><div class="sm-card novo">Microsoft 365, Jira, Telegram, Databricks</div><div class="sm-card">Fontes de dados</div></div>
+      <div class="sm-col"><div class="sm-bb">Equipar com Skills<span>Novo</span></div><div class="sm-card novo">Habilitar skills no agente</div><div class="sm-card novo">Catálogo (114 + 3)</div><div class="sm-card partial">Skill Marketplace</div></div>
+      <div class="sm-col sm-col-heart"><div class="sm-bb">Conversar  ★<span>Jornada 05 — o coração</span></div><div class="sm-card">Chat: streaming + anexos</div><div class="sm-card">Comitês (N agentes)</div><div class="sm-card novo">Sessão multi-conversa</div></div>
+      <div class="sm-col"><div class="sm-bb">Automatizar<span>Jornada 07</span></div><div class="sm-card">Gatilhos (cron / evento)</div><div class="sm-card">Condições + ações</div><div class="sm-card">Logs de execução</div></div>
+      <div class="sm-col"><div class="sm-bb">Acompanhar<span>Jornadas 06 &amp; 08</span></div><div class="sm-card">Dashboard &amp; analytics</div><div class="sm-card">Inbox + notificações</div><div class="sm-card">Relatórios</div></div>
+      <div class="sm-col"><div class="sm-bb">Gerenciar<span>Jornadas 09–10</span></div><div class="sm-card">Compartilhar agente</div><div class="sm-card">Perfil &amp; quotas</div><div class="sm-card novo">Life Memory</div><div class="sm-card">Admin &amp; governança</div></div>
+      <div class="sm-col"><div class="sm-bb" style="background:var(--parcial);color:#1b1f27">Colaborar (B2B)<span>Parcial</span></div><div class="sm-card partial">Org. multi-tenant + RBAC</div><div class="sm-card partial">Animus (HR)</div><div class="sm-card partial">Chat corporativo</div></div>
+      <div class="sm-col"><div class="sm-bb" style="background:var(--parcial);color:#1b1f27">Alcançar (Canais)<span>Parcial</span></div><div class="sm-card partial">Slack</div><div class="sm-card partial">Telegram</div><div class="sm-card partial">Alexa</div></div>
+    </div>
+  </section>
+
+  <section class="block" id="glossario">
+    <h2 class="sec">Fundamentos</h2><h3 class="mod">Glossário de domínio</h3>
+    <p class="desc">Conceitos centrais das funcionalidades disponíveis.</p><dl class="gloss"><dt>Agente</dt><dd>Entidade de IA configurável (LLM + personalidade + conhecimento), pessoal ou compartilhada.</dd><dt>Integral Memory / Life Memory</dt><dd>Memória persistente do agente/usuário — conhecimento e contexto estável carregado entre conversas.</dd><dt>On-Demand Knowledge</dt><dd>Conhecimento dinâmico buscado em tempo real via integrações e fontes de dados.</dd><dt>RAG</dt><dd>Base de conhecimento (texto, arquivos, áudio/vídeo transcrito) indexada para busca semântica.</dd><dt>Skill</dt><dd>Habilidade modular atribuível a um agente sem deploy (prompt, tool ou composite) — amplia o que o agente sabe fazer.</dd><dt>MCP</dt><dd>Model Context Protocol — protocolo para expor ferramentas/contexto a agentes.</dd><dt>Multi-tenant / RBAC</dt><dd>Isolamento por workspace e autorização por papel (role-based).</dd><dt>Crédito / quota</dt><dd>Unidade de consumo por plano (armazenamento, agentes, mensagens/tokens).</dd><dt>Comitê</dt><dd>Conversa com vários agentes (N agentes) na mesma sessão.</dd></dl>
+  </section>
+
+  <section class="block" id="perfis">
+    <h2 class="sec">Quem usa</h2><h3 class="mod">Perfis &amp; matriz de acesso</h3>
+    <p class="desc">Os perfis plenos são Cliente e Admin. O perfil B2B (owner/admin/member organizacional) é parcial, junto do módulo de Organizações.</p>
+    <div class="cards">
+      <div class="card"><b>Cliente</b><span>Agentes, conversa, skills, automações, analytics, conta.</span></div>
+      <div class="card"><b>Admin</b><span>Usuários, LLMs, finanças, canais, governança, skills de plataforma.</span></div>
+      <div class="card"><b>B2B (parcial)</b><span>Owner / admin / member organizacional — em validação.</span></div>
+    </div>
+    <table class="grid"><thead><tr><th>Módulo</th><th>Cliente</th><th>Admin</th></tr></thead><tbody>
+      <tr><td>Contas &amp; acesso</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Agentes de IA</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Conversa</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Automação &amp; integrações</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Skills</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Analytics &amp; monitoramento</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Conta &amp; produtividade</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Administração</td><td class="no">—</td><td class="yes">✓</td></tr>
+      <tr><td>Sistema &amp; acesso</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Organizações (B2B)</td><td class="part">parcial</td><td class="part">parcial</td></tr>
+      <tr><td>Canais</td><td class="part">parcial</td><td class="part">parcial</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="block" id="plataforma">
+    <h2 class="sec">Transversal</h2><h3 class="mod">Recursos de plataforma</h3>
+    <p class="desc">Capacidades disponíveis em toda a aplicação.</p><ul class="feat"><li><span class="dot"></span><span class="txt">Tema claro/escuro — preferência salva<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Busca global — localizar agentes e conteúdo<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Troca de perfil — Pessoal / Admin<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Inbox + notificações — mensagens de agentes com badge<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Login social — Google, Microsoft e Eduzz<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Multi-tenant + RBAC — papéis e permissões<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Créditos / quotas — limites de uso por plano<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Skills — habilidades modulares por agente, sem deploy<span class="pill novo">novo</span></span></li></ul>
+  </section>
+
+  <section class="block" id="canais">
+    <h2 class="sec">Alcance</h2><h3 class="mod">Canais<span class="pmod parcial">Parcial</span></h3>
+    <p class="desc">A Web é o canal pleno. Slack, Telegram e Alexa existem como canais em liberação parcial. WhatsApp (Business/Pessoal), app mobile e modo kiosk seguem fora (ver “Fora da versão atual”).</p>
+    <table class="grid"><thead><tr><th>Canal</th><th>Status</th></tr></thead><tbody>
+      <tr><td>Web</td><td class="yes">Disponível</td></tr>
+      <tr><td>Slack</td><td class="part">Parcial</td></tr>
+      <tr><td>Telegram</td><td class="part">Parcial</td></tr>
+      <tr><td>Alexa</td><td class="part">Parcial</td></tr>
+      <tr><td>WhatsApp (Business/Pessoal)</td><td class="no">Fora</td></tr>
+      <tr><td>App mobile (Capacitor)</td><td class="no">Fora</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="block" id="contas">
+    <h2 class="sec">Módulo</h2>
+    <h3 class="mod">Contas &amp; acesso<span class="pmod on">Disponível</span></h3>
+    <p class="desc">Entrada da plataforma: autenticação, cadastro e recuperação de acesso.</p>
+    <ul class="feat"><li><span class="dot"></span><span class="txt">Login e-mail/senha e social (Google, Microsoft, Eduzz)<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Recuperação e redefinição de senha<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Cadastro com ativação<span class="pill novo">novo · disponível</span></span></li><li><span class="dot"></span><span class="txt">Multi-tenant e RBAC aplicados desde o login<span class="pill">disponível</span></span></li></ul>
+  </section>
+  <section class="block" id="agentes">
+    <h2 class="sec">Módulo · núcleo</h2>
+    <h3 class="mod">Agentes de IA<span class="pmod on">Disponível</span></h3>
+    <p class="desc">Configuração, nutrição (conhecimento), ensino e compartilhamento de agentes. Memória em duas camadas: persistente (Integral Memory) e dinâmica via integrações (On-Demand Knowledge).</p>
+    <ul class="feat"><li><span class="dot"></span><span class="txt">Configuração do agente: identidade, prompt, parâmetros e troca de LLM<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Base de conhecimento (RAG): texto, arquivos, áudio/vídeo transcrito<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Importação de conhecimento por IA<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Ensino/treinamento: refinar prompt, semântica, qualidade<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Compartilhamento de agentes (rede, convites, aprovações)<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Comitês: montar conversa com N agentes<span class="pill">disponível</span></span></li></ul>
+  </section>
+  <section class="block" id="conversa">
+    <h2 class="sec">Módulo · núcleo</h2>
+    <h3 class="mod">Conversa<span class="pmod on">Disponível</span></h3>
+    <p class="desc">Interface de interação com os agentes, com respostas em streaming e anexos.</p>
+    <ul class="feat"><li><span class="dot"></span><span class="txt">Chat com agentes: streaming, anexos e histórico<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Comitês: conversa com N agentes<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Sessão multi-conversa: várias conversas em abas/janelas com deep-link<span class="pill novo">novo · disponível</span></span></li></ul>
+  </section>
+  <section class="block" id="automacao">
+    <h2 class="sec">Módulo · núcleo</h2>
+    <h3 class="mod">Automação &amp; integrações<span class="pmod on">Disponível</span></h3>
+    <p class="desc">Gatilhos automáticos conectando agentes a serviços externos e fontes de dados.</p>
+    <ul class="feat"><li><span class="dot"></span><span class="txt">Automações por gatilho (cron/intervalo/evento)<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Condições e ações<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Fontes de dados (webhook, polling, integração)<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Logs de execução com filtros e estatísticas<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Integrações: Google Workspace, Notion, HubSpot e MCP<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Integrações novas: Microsoft 365, Jira, Telegram, Databricks Genie, Webhooks<span class="pill novo">novo · disponível</span></span></li></ul>
+    <p class="desc" style="margin-top:12px;font-size:13px">No código, ainda não liberadas como integração: Slack, ContaAzul, Tuya IoT, Alexa, Eduzz/Education.</p>
+  </section>
+  <section class="block" id="skills">
+    <h2 class="sec">Módulo · novo</h2>
+    <h3 class="mod">Skills<span class="pmod novo">Novo · Disponível</span></h3>
+    <p class="desc">Habilidades modulares e reutilizáveis atribuíveis a cada agente <b>sem deploy</b>, complementando as tools nativas — ampliam o que o agente sabe fazer (integrações, prompts curados, ações compostas).</p>
+    <ul class="feat"><li><span class="dot"></span><span class="txt">Tipos de skill: prompt, tool, composite<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Execução: webhook (com guarda SSRF) e native<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Visibilidade: pessoal, organizacional e plataforma<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Opt-in por agente (pessoal e organizacional)<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Catálogo de 114 skills nativas + 3 curadas, importável no admin<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Seleção centralizada (vale em chat, automação, grupos e stream)<span class="pill">disponível</span></span></li><li><span class="dot p"></span><span class="txt">Skill Marketplace (comprar/listar skills)<span class="pill parcial">parcial</span></span></li></ul>
+  </section>
+  <section class="block" id="analytics">
+    <h2 class="sec">Módulo</h2>
+    <h3 class="mod">Analytics &amp; monitoramento<span class="pmod on">Disponível</span></h3>
+    <p class="desc">Dashboards de uso e monitoramento das APIs externas.</p>
+    <ul class="feat"><li><span class="dot"></span><span class="txt">Dashboard principal com KPIs e convites<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Analytics pessoal, por agente e por domínio<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Visão de ecossistema (subscrições + relações)<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Monitoramento de APIs (OpenAI, ElevenLabs, Twilio)<span class="pill">disponível</span></span></li></ul>
+  </section>
+  <section class="block" id="conta">
+    <h2 class="sec">Módulo</h2>
+    <h3 class="mod">Conta &amp; produtividade<span class="pmod on">Disponível</span></h3>
+    <p class="desc">Perfil, segurança, consumo, relatórios e memória do usuário.</p>
+    <ul class="feat"><li><span class="dot"></span><span class="txt">Perfil e segurança: senha, MFA, chaves MCP, tokens de API<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Consumo de recursos, quotas e créditos<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Agente mentor pessoal<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Relatórios pessoais (favoritos/arquivados)<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Histórico de mensagens cross-agente<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Life Memory / Integral Memory — memória persistente do usuário<span class="pill novo">novo · disponível</span></span></li></ul>
+  </section>
+  <section class="block" id="admin">
+    <h2 class="sec">Módulo · restrito</h2>
+    <h3 class="mod">Administração<span class="pmod on">Disponível</span></h3>
+    <p class="desc">Console de administradores para gerir usuários, modelos, finanças, canais, skills e governança.</p>
+    <ul class="feat"><li><span class="dot"></span><span class="txt">Gestão de usuários, quotas e onboarding<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Gestão de LLMs e API keys; monitor de APIs<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Finanças (MRR/ARR, churn, NPS)<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Integrações e canais<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Configuração do sistema, function calls, hierarquia<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Governança: políticas, compliance, audit logs<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">MCP global e client keys<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Administração de Skills de plataforma (/api/admin/skills)<span class="pill novo">novo · disponível</span></span></li></ul>
+  </section>
+  <section class="block" id="sistema">
+    <h2 class="sec">Módulo · transversal</h2>
+    <h3 class="mod">Sistema &amp; acesso<span class="pmod on">Disponível</span></h3>
+    <p class="desc">Utilidades transversais e integração programática.</p>
+    <ul class="feat"><li><span class="dot"></span><span class="txt">Tokens de API e MCP API Keys<span class="pill">disponível</span></span></li><li><span class="dot"></span><span class="txt">Portal público e callbacks OAuth<span class="pill">disponível</span></span></li></ul>
+  </section>
+  <section class="block" id="organizacoes">
+    <h2 class="sec">Módulo · B2B</h2>
+    <h3 class="mod">Organizações (B2B) + Animus<span class="pmod parcial">Parcial</span></h3>
+    <p class="desc">Workspace corporativo multi-tenant: agentes corporativos, RBAC, governança e integração com HR externo (Animus). Implementado no código (b2b-commerce-service); liberação parcial em validação.</p>
+    <ul class="feat"><li><span class="dot p"></span><span class="txt">Organização multi-tenant com RBAC (owner / admin / member)<span class="pill parcial">parcial</span></span></li><li><span class="dot p"></span><span class="txt">Integração Animus (HR externo)<span class="pill parcial">parcial</span></span></li><li><span class="dot p"></span><span class="txt">Chat corporativo / governança organizacional<span class="pill parcial">parcial</span></span></li><li><span class="dot"></span><span class="txt">Organograma visual (Canvas) + grupos/containers<span class="pill" style="color:var(--off);background:var(--off-bg)">fora</span></span></li></ul>
+  </section>
+  <section class="block" id="fora">
+    <h2 class="sec">Transparência</h2><h3 class="mod">Fora da versão atual</h3>
+    <p class="desc">Existe no repositório, porém não disponível ao usuário hoje — candidatos naturais de roadmap.</p><div class="parked"><b>No código, mas fora da versão atual.</b><ul><li>Monetização (Producer) — Producer Studio, clientes, subscrições, planos e financeiro</li><li>Memória &amp; Inteligências avançadas — memória coletiva, mineração de decisões, inteligência competitiva/emocional</li><li>Integrações no código não liberadas: Slack, ContaAzul, Tuya IoT, Alexa e Eduzz/Education</li><li>Canais WhatsApp (Business/Pessoal) e App mobile (Capacitor)</li><li>Loja / Storefront público (feature flag) e Marketplace público de skills</li><li>Hugent Studio (wizard), Agentes notáveis e embed em sites</li><li>Avaliação de resposta (rating), chat corporativo, vídeo-chamada com avatar / video-call</li><li>Registros emocionais (OCR/voz), Cursos (Eduzz), Sistemas conectados, modo kiosk / Direct Access</li></ul></div>
+  </section>
+  <section class="block" id="cobertura">
+    <h2 class="sec">Sobre este documento</h2><h3 class="mod">Notas</h3>
+    <ul class="feat">
+      <li><span class="dot"></span><span class="txt">Escopo definido por triagem do time de produto sobre o inventário do repositório atual, confirmado em 16/06/2026.</span></li>
+      <li><span class="dot"></span><span class="txt">Disponível = liberado ao usuário · Parcial = parcialmente liberado / em validação · Fora = existe no código, não liberado.</span></li>
+      <li><span class="dot"></span><span class="txt">Fonte: curadoria-produto.yaml. Diff de mudanças: AFL-O-Que-Mudou-Codigo-Atual.md.</span></li>
+    </ul>
+    <footer>Agents for Life · Documentação de Produto (versão atual, validada) · repositório eduzz/labzz_afl.</footer>
+  </section>
+</main></div></body></html>
