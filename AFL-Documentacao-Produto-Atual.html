@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AFL — Documentação de Produto</title>
+<style>
+  :root{
+    --bg:#ffffff;--surface:#f7f8f9;--surface2:#fbfbfa;--line:#e8eaed;
+    --text:#37352f;--muted:#6b6b6b;--accent:#5a4be0;--accent-soft:rgba(124,108,255,.14);
+    --ativo:#1f9d57;--ativo-bg:#e7f5ec;--parcial:#b87914;--parcial-bg:#fbf0db;
+    --fora:#9b9a97;--fora-bg:#f1f1ef;--conf:#3a7bd5;--conf-bg:#e8f0fb;
+  }
+  @media (prefers-color-scheme: dark){:root{
+    --bg:#191919;--surface:#202020;--surface2:#1e1e1e;--line:#333;
+    --text:#e9e9e7;--muted:#9b9b9b;--accent:#9b8cff;--accent-soft:rgba(124,108,255,.2);
+    --ativo:#4cc483;--ativo-bg:rgba(76,196,131,.14);--parcial:#e0a23a;--parcial-bg:rgba(224,162,58,.14);
+    --fora:#8a8a88;--fora-bg:rgba(150,150,150,.12);--conf:#6ba4e8;--conf-bg:rgba(107,164,232,.14);
+  }}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* layout */
+  .shell{display:flex;max-width:1180px;margin:0 auto}
+  nav.toc{position:sticky;top:0;align-self:flex-start;width:248px;height:100vh;overflow-y:auto;
+    padding:34px 14px 60px 22px;border-right:1px solid var(--line);font-size:13.5px}
+  nav.toc .brand{font-weight:700;font-size:15px;margin:0 0 2px;display:flex;gap:7px;align-items:center}
+  nav.toc .ver{color:var(--muted);font-size:11.5px;margin:0 0 18px}
+  nav.toc .grp{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px}
+  nav.toc a{display:block;color:var(--text);padding:4px 8px;border-radius:6px;margin:1px 0}
+  nav.toc a:hover{background:var(--surface);text-decoration:none}
+  main{flex:1;min-width:0;padding:48px 40px 110px;max-width:860px}
+
+  h1{font-size:34px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px;display:flex;gap:12px;align-items:center}
+  h2{font-size:23px;font-weight:700;letter-spacing:-.01em;margin:46px 0 4px;padding-top:10px;display:flex;gap:9px;align-items:center}
+  h3{font-size:17px;font-weight:600;margin:22px 0 6px}
+  .cover{width:100%;height:130px;border-radius:10px;
+    background:linear-gradient(110deg,#5a4be0,#8b5cf6 58%,#22d3a8);margin:0 0 24px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 2px}
+  p{margin:8px 0 12px}
+  ul{margin:8px 0 12px;padding-left:22px}
+  li{margin:4px 0}
+  .lead{color:var(--muted);font-size:15px}
+  hr{border:none;border-top:1px solid var(--line);margin:30px 0}
+
+  /* pills */
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:6px;white-space:nowrap;vertical-align:middle}
+  .b-ativo{color:var(--ativo);background:var(--ativo-bg)}
+  .b-parcial{color:var(--parcial);background:var(--parcial-bg)}
+  .b-fora{color:var(--fora);background:var(--fora-bg)}
+  .b-conf{color:var(--conf);background:var(--conf-bg)}
+  .b-novo{color:var(--accent);background:var(--accent-soft)}
+
+  /* note boxes */
+  .note{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;
+    padding:12px 15px;margin:16px 0;font-size:14px;background:var(--surface2)}
+  .note.warn{border-left-color:var(--parcial);background:var(--parcial-bg)}
+  .note .t{font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin:0 0 4px;color:var(--muted)}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border:1px solid var(--line);vertical-align:top}
+  th{background:var(--surface);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+  td.m{font-weight:600;white-space:nowrap}
+  code{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12.5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  /* identity card */
+  .ident{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:6px 0 8px}
+  .ident div{background:var(--bg);padding:12px 14px}
+  .ident .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 3px}
+  .ident .v{font-size:14px;font-weight:600}
+
+  /* module ficha */
+  .ficha{border:1px solid var(--line);border-radius:12px;padding:4px 22px 20px;margin:18px 0;background:var(--surface2)}
+  .ficha h3.fname{font-size:20px;margin:18px 0 2px;display:flex;gap:10px;align-items:center}
+  .ficha .valor{font-size:15px;color:var(--text);margin:4px 0 16px}
+  .field{margin:16px 0 0}
+  .field .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin:0 0 5px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+  .chip{font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 9px;color:var(--text)}
+  details{border:1px solid var(--line);border-radius:8px;margin:8px 0;background:var(--bg)}
+  summary{cursor:pointer;list-style:none;padding:9px 13px;font-size:13.5px;font-weight:600;color:var(--muted)}
+  summary::-webkit-details-marker{display:none}
+  summary:before{content:"▸ ";color:var(--muted)}
+  details[open]>summary:before{content:"▾ "}
+  details .inner{padding:0 13px 12px}
+
+  /* placeholder module list */
+  .modgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:14px 0}
+  .modcard{border:1px solid var(--line);border-radius:9px;padding:12px 14px;background:var(--surface2)}
+  .modcard .mt{font-weight:600;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .modcard .md{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+  .ph{font-size:11px;color:var(--muted);font-style:italic;margin-top:6px}
+
+  footer{margin-top:46px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  .badge-draft{font-size:10px;color:var(--parcial);font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+    border:1px solid var(--parcial);border-radius:5px;padding:1px 6px;margin-left:8px;vertical-align:middle}
+  @media(max-width:880px){nav.toc{display:none}main{padding:32px 22px 80px}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="toc">
+  <div class="brand">🤖 AFL</div>
+  <div class="ver">Documentação de Produto · v2 (rascunho)</div>
+
+  <div class="grp">Nível produto</div>
+  <a href="#identidade">Identidade</a>
+  <a href="#visao">Visão do produto</a>
+  <a href="#changelog">O que mudou esta semana</a>
+  <a href="#storymap">Story map</a>
+  <a href="#glossario">Glossário de domínio</a>
+  <a href="#acesso">Perfis &amp; matriz de acesso</a>
+  <a href="#canais">Canais</a>
+  <a href="#arquitetura">Arquitetura</a>
+  <a href="#fora">Fora da versão atual</a>
+
+  <div class="grp">Módulos</div>
+  <a href="#mod-agentes"><b>Agentes de IA</b> ★</a>
+  <a href="#mod-contas">Contas &amp; acesso</a>
+  <a href="#mod-conversa">Conversa</a>
+  <a href="#mod-automacao">Automação &amp; integrações</a>
+  <a href="#mod-analytics">Analytics &amp; monitoramento</a>
+  <a href="#mod-conta">Conta &amp; produtividade</a>
+  <a href="#mod-admin">Administração</a>
+  <a href="#mod-sistema">Sistema &amp; acesso</a>
+  <a href="#mod-skills">Skills</a>
+  <a href="#mod-organizacoes">Organizações (B2B) + Animus</a>
+  <a href="#mod-canais">Canais</a>
+</nav>
+
+<main>
+  <div class="cover"></div>
+  <h1>🤖 AFL — Documentação de Produto</h1>
+  <p class="sub">Agents for Life — plataforma B2B de agentes de IA · ecossistema Eduzz</p>
+  <p class="sub">PM / dono: Ale Rezende · idioma: pt-BR · base: commit <code>848e99bd</code></p>
+
+  <div class="note">
+    <div class="t">Como ler este documento</div>
+    Estrutura nova seguindo a <b>Espec de Conteúdo v1.1</b>: nível produto no topo, depois uma <b>ficha completa por módulo</b>.
+    Nesta versão de validação, o módulo <b>Agentes de IA</b> está 100% preenchido como <b>padrão-ouro</b>;
+    os demais aparecem no índice como placeholder, prontos para replicar o mesmo formato após o seu OK.
+    Destino final: árvore de páginas no Notion.
+  </div>
+
+  <!-- 1. IDENTIDADE -->
+  <h2 id="identidade">1 · Identidade</h2>
+  <div class="ident">
+    <div><div class="k">Produto</div><div class="v">Agents for Life (AFL)</div></div>
+    <div><div class="k">Versão da doc</div><div class="v">v2 — rascunho</div></div>
+    <div><div class="k">Data do run</div><div class="v">2026-06-18</div></div>
+    <div><div class="k">Commit-fonte</div><div class="v"><code>848e99bd</code></div></div>
+    <div><div class="k">Status geral</div><div class="v"><span class="pill b-ativo">Em produção</span></div></div>
+    <div><div class="k">Cadência</div><div class="v">Sexta 18:00</div></div>
+  </div>
+  <div class="note warn">
+    <div class="t">Aviso de base</div>
+    A base lida (commit <code>848e99bd</code>, maio/2026) está desatualizada — o app já tem funcionalidades novas (ex.: Skills).
+    O run semanal deve apontar para o repositório <b>atual</b> para capturar o inventário correto.
+  </div>
+
+  <!-- 2. VISÃO -->
+  <h2 id="visao">2 · Visão do produto <span class="badge-draft">curado</span></h2>
+  <p>Permitir que pessoas e equipes criem, treinem e coloquem para trabalhar agentes de IA próprios — conectados às suas
+  ferramentas e ao seu conhecimento — com simplicidade, do primeiro agente até a automação no dia a dia.</p>
+  <p class="lead">Posicionamento: “A forma mais simples de criar e colocar agentes de IA para trabalhar pela sua empresa
+  — conectados às suas ferramentas e ao seu conhecimento.” Plataforma B2B open-source de agentes, dentro do ecossistema Eduzz.</p>
+
+  <!-- 3. CHANGELOG -->
+  <h2 id="changelog">3 · O que mudou esta semana <span class="badge-draft">derivado</span></h2>
+  <p class="lead">Peça central da cadência: gerado automaticamente comparando o inventário do código atual com o snapshot da semana anterior.
+  Sua única tarefa semanal é triar os itens <span class="pill b-conf">A confirmar</span>.</p>
+  <table>
+    <tr><th>Tipo</th><th>Item</th><th>Módulo</th><th>Ação</th></tr>
+    <tr><td><span class="pill b-novo">➕ Novo</span></td><td>Catálogo de 114 skills nativas importável no admin</td><td><a href="#mod-index">Skills</a></td><td><span class="pill b-conf">A confirmar</span></td></tr>
+    <tr><td><span class="pill b-novo">➕ Novo</span></td><td>Integração Databricks Genie (análise de dados)</td><td><a href="#mod-index">Automação</a></td><td><span class="pill b-conf">A confirmar</span></td></tr>
+    <tr><td>✅ Confirmado</td><td>Life Memory promovido a <span class="pill b-ativo">Disponível</span></td><td><a href="#mod-index">Conta</a></td><td>✔ por você</td></tr>
+    <tr><td>✅ Confirmado</td><td>Microsoft 365, Jira, Telegram liberados</td><td><a href="#mod-index">Automação</a></td><td>✔ por você</td></tr>
+  </table>
+  <p class="lead"><i>Exemplo ilustrativo — preenchido automaticamente pelo run semanal.</i></p>
+
+  <!-- 4. STORY MAP -->
+  <h2 id="storymap">4 · Story map</h2>
+  <p class="lead">A jornada do usuário, considerando apenas o que está disponível hoje.</p>
+  <table>
+    <tr><th>Entrar</th><th>Criar agente</th><th>Nutrir &amp; treinar</th><th>Conversar</th><th>Automatizar</th><th>Acompanhar</th></tr>
+    <tr>
+      <td>Login / cadastro com ativação; multi-tenant + RBAC</td>
+      <td>Configurar identidade, prompt, LLM; atribuir Skills</td>
+      <td>Base de conhecimento (RAG); ensino; importar por IA</td>
+      <td>Chat com streaming e anexos; Comitês (N agentes)</td>
+      <td>Gatilhos, condições e ações; conectar Google/MS365/Notion…</td>
+      <td>Analytics por usuário/agente; consumo &amp; créditos; relatórios</td>
+    </tr>
+  </table>
+
+  <!-- 5. GLOSSÁRIO -->
+  <h2 id="glossario">5 · Glossário de domínio</h2>
+  <table>
+    <tr><th>Termo</th><th>Definição canônica</th></tr>
+    <tr><td class="m">Agente</td><td>Assistente de IA próprio, com identidade, prompt, LLM e base de conhecimento; pode ser compartilhado.</td></tr>
+    <tr><td class="m">Base de conhecimento (RAG)</td><td>Conteúdo (texto, arquivos, áudio/vídeo transcrito) indexado por busca semântica que o agente consulta.</td></tr>
+    <tr><td class="m">Comitê</td><td>Conversa com vários agentes simultaneamente no mesmo chat.</td></tr>
+    <tr><td class="m">Skill</td><td>Habilidade modular e reutilizável atribuível a um agente sem deploy (prompt, tool ou composite).</td></tr>
+    <tr><td class="m">Automação</td><td>Fluxo disparado por gatilho (cron/intervalo/evento) que executa condições e ações.</td></tr>
+    <tr><td class="m">Crédito / quota</td><td>Unidade de consumo de recursos da plataforma controlada por usuário/organização.</td></tr>
+    <tr><td class="m">Organização</td><td>Workspace corporativo multi-tenant com RBAC (owner/admin/member) e governança.</td></tr>
+    <tr><td class="m">Life Memory</td><td>Memória pessoal integral do usuário, cross-agente.</td></tr>
+    <tr><td class="m">MCP</td><td>Protocolo de integração que expõe ferramentas externas aos agentes via API keys.</td></tr>
+  </table>
+
+  <!-- 6. ACESSO -->
+  <h2 id="acesso">6 · Perfis &amp; matriz de acesso</h2>
+  <table>
+    <tr><th>Perfil</th><th>O que faz</th><th>Status</th></tr>
+    <tr><td class="m">Cliente (usuário final)</td><td>Cria e usa agentes pessoais — conversa, conhecimento próprio, automações, relatórios.</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+    <tr><td class="m">Organização (B2B)</td><td>Equipes com agentes corporativos, RBAC e governança (Animus).</td><td><span class="pill b-parcial">Parcial</span></td></tr>
+    <tr><td class="m">Administrador</td><td>Opera a plataforma: usuários, LLMs, finanças, integrações/canais, MCP, governança.</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+    <tr><td class="m">Produtor</td><td>Monetização de agentes/conhecimento (Producer Studio).</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+  </table>
+
+  <!-- 7. CANAIS -->
+  <h2 id="canais">7 · Canais</h2>
+  <p class="lead">Pontos de contato além da web para conversar com os agentes.</p>
+  <div class="chips">
+    <span class="chip">Slack <span class="pill b-parcial">Parcial</span></span>
+    <span class="chip">Telegram <span class="pill b-parcial">Parcial</span></span>
+    <span class="chip">Alexa <span class="pill b-parcial">Parcial</span></span>
+    <span class="chip">WhatsApp Business <span class="pill b-fora">Fora</span></span>
+    <span class="chip">WhatsApp Pessoal <span class="pill b-fora">Fora</span></span>
+    <span class="chip">App mobile (Capacitor) <span class="pill b-fora">Fora</span></span>
+  </div>
+
+  <!-- 8. ARQUITETURA -->
+  <h2 id="arquitetura">8 · Arquitetura <span class="badge-draft">contexto técnico</span></h2>
+  <p class="lead">Visão de alto nível dos serviços externos sobre os quais a plataforma roda.</p>
+  <div class="chips">
+    <span class="chip">AWS Bedrock — LLM</span>
+    <span class="chip">OpenAI — LLM / Whisper</span>
+    <span class="chip">pgvector — busca semântica</span>
+    <span class="chip">Object Storage — arquivos</span>
+    <span class="chip">WebSocket — realtime</span>
+    <span class="chip">ElevenLabs · Twilio · HeyGen</span>
+    <span class="chip">MCP · OAuth · Webhooks</span>
+  </div>
+
+  <!-- 9. FORA -->
+  <h2 id="fora">9 · Fora da versão atual / backlog <span class="badge-draft">curado</span></h2>
+  <p class="lead">Existe no código, mantido fora da versão atual.</p>
+  <ul>
+    <li><b>Monetização (Producer)</b> — Producer Studio, clientes, subscrições, planos e financeiro (13 rotas <code>/producer/*</code>).</li>
+    <li><b>Memória &amp; Inteligências avançadas</b> — memória coletiva, mineração de decisões, inteligência competitiva/emocional.</li>
+    <li><b>Loja / Storefront público</b> (feature flag) e Marketplace público de skills.</li>
+    <li><b>Canais fora</b> — WhatsApp (Business/Pessoal via Evolution/Baileys), app mobile (Capacitor).</li>
+    <li><b>Modo kiosk / Direct Access</b> (Acesso Direto).</li>
+    <li><b>Hugent Studio</b> (wizard <code>/hugent</code>), Agentes notáveis, embed em sites.</li>
+    <li>Avaliação de resposta, chat corporativo, vídeo-avatar/video-call.</li>
+    <li>Registros emocionais (OCR/voz), Cursos (Eduzz), sistemas conectados.</li>
+  </ul>
+
+  <hr>
+
+  <!-- ================= MÓDULOS ================= -->
+  <h1>Módulos</h1>
+  <p class="lead">O coração da documentação: uma <b>ficha completa</b> por módulo, com 9 campos.
+  A coluna “fonte” de cada campo define quem mantém — <span class="badge-draft">curado</span> (PM),
+  derivado do código, ou capturado do ambiente.</p>
+
+  <!-- GOLD STANDARD: AGENTES -->
+  <div class="ficha" id="mod-agentes">
+    <h3 class="fname">🧠 Agentes de IA <span class="pill b-ativo">Disponível</span> <span class="badge-draft">★ padrão-ouro</span></h3>
+    <div class="valor"><b>O que entrega:</b> criar, nutrir com conhecimento e treinar um agente próprio, e compartilhá-lo. <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Configuração do agente (identidade, prompt, parâmetros, troca de LLM)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Base de conhecimento (RAG) — texto, arquivos, áudio/vídeo transcrito</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Importação de conhecimento por IA</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Ensino / treinamento (refinar prompt, semântica, qualidade)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Compartilhamento de agentes (rede, convites, aprovações)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Comitês (montar conversa com N agentes)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Hugent Studio (wizard de criação)</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>Agentes notáveis</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>Embed em sites</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>/agents</code> — lista</span>
+        <span class="chip"><code>/agents/:id/config</code> — configuração</span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright contra <code>app.agentsforlife.org</code>. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>/agents</code></span>
+        <span class="chip"><code>/agents/:id/config</code></span>
+        <span class="chip"><code>/agents/:id/documents</code></span>
+        <span class="chip"><code>/agent-teaching/:id</code></span>
+        <span class="chip"><code>/shared-agents</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">AWS Bedrock (LLM)</span>
+        <span class="chip">pgvector (busca semântica)</span>
+        <span class="chip">Object Storage (arquivos)</span>
+        <span class="chip">OpenAI Whisper (transcrição)</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>agents</code></span>
+        <span class="chip"><code>agent_documents</code></span>
+        <span class="chip"><code>agent_knowledge</code></span>
+        <span class="chip"><code>shared_agents</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> criação hoje sem wizard guiado (Hugent Studio fora da versão atual).</p>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <!-- REMAINING MODULES (replicadas da curadoria) -->
+  <h2 id="mod-index">Demais módulos</h2>
+  <p class="lead">Mesma ficha de 9 campos do padrão-ouro, preenchida a partir da curadoria.</p>
+
+  <div class="ficha" id="mod-contas">
+    <h3 class="fname">🔑 Contas &amp; acesso <span class="pill b-ativo">Disponível</span></h3>
+    <div class="valor"><b>O que entrega:</b> Entrar na plataforma de forma segura e recuperar o acesso. <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Login e-mail/senha e social</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Recuperação e redefinição de senha</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Multi-tenant e RBAC</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Cadastro com ativação</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Acesso Direto / kiosk</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>auth</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>auth</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">OAuth: Google, Microsoft, Eduzz</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>users</code></span>
+        <span class="chip"><code>sessions</code></span>
+        <span class="chip"><code>password_resets</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> Acesso Direto / kiosk não liberado na versão atual.</p>
+      
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <div class="ficha" id="mod-conversa">
+    <h3 class="fname">💬 Conversa <span class="pill b-ativo">Disponível</span></h3>
+    <div class="valor"><b>O que entrega:</b> Interagir com os agentes em tempo real, individualmente ou em Comitês (vários agentes na mesma conversa). <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Chat com streaming e anexos</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Avaliação de resposta (rating)</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>Chat corporativo</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>Vídeo com avatar</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>Comitês (conversa com N agentes)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>chat</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>chat</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">WebSocket (realtime)</span>
+        <span class="chip">AWS Bedrock / OpenAI (LLM)</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>conversations</code></span>
+        <span class="chip"><code>messages</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> Avaliação de resposta e chat corporativo fora da versão atual.</p>
+      
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <div class="ficha" id="mod-automacao">
+    <h3 class="fname">⚙️ Automação &amp; integrações <span class="pill b-ativo">Disponível</span></h3>
+    <div class="valor"><b>O que entrega:</b> Conectar agentes a serviços externos e disparar ações automáticas. <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Automações por gatilho (cron/intervalo/evento)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Condições e ações</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Fontes de dados (webhook, polling, integração)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Logs de execução</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Integrações: Google, Notion, HubSpot, MCP</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Integrações novas liberadas: Microsoft 365, Jira, Telegram, Databricks Genie</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Integrações no código não liberadas: Slack, ContaAzul, Tuya, Alexa, Eduzz</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>WhatsApp via QR</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>automations</code></span>
+        <span class="chip"><code>integrations</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>automations</code></span>
+        <span class="chip"><code>integrations</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">Google Workspace</span>
+        <span class="chip">Microsoft 365 (Mail, Calendar, OneDrive, SharePoint, Teams) — novo</span>
+        <span class="chip">Notion</span>
+        <span class="chip">HubSpot</span>
+        <span class="chip">Jira — novo</span>
+        <span class="chip">Telegram — novo</span>
+        <span class="chip">Databricks Genie (análise de dados) — novo</span>
+        <span class="chip">MCP</span>
+        <span class="chip">Webhooks</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>automations</code></span>
+        <span class="chip"><code>data_sources</code></span>
+        <span class="chip"><code>agent_data_connections</code></span>
+        <span class="chip"><code>integrations</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> Existem no código mas não liberadas na versão atual: Slack, ContaAzul, Tuya IoT, Alexa, Eduzz/Education, WhatsApp via QR.</p>
+      
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <div class="ficha" id="mod-analytics">
+    <h3 class="fname">📊 Analytics &amp; monitoramento <span class="pill b-ativo">Disponível</span></h3>
+    <div class="valor"><b>O que entrega:</b> Acompanhar uso por usuário, agente e domínio, e a saúde das APIs. <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Dashboard principal com KPIs</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Analytics pessoal, por agente e por domínio</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Visão de ecossistema</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Monitoramento de APIs externas</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Registros emocionais (OCR/voz)</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>analytics</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>analytics</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">OpenAI</span>
+        <span class="chip">ElevenLabs</span>
+        <span class="chip">Twilio (monitoramento)</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>analytics_events</code></span>
+        <span class="chip"><code>usage</code></span>
+        <span class="chip"><code>api_metrics</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> Registros emocionais (experimental) fora da versão atual.</p>
+      
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <div class="ficha" id="mod-conta">
+    <h3 class="fname">👤 Conta &amp; produtividade <span class="pill b-ativo">Disponível</span></h3>
+    <div class="valor"><b>O que entrega:</b> Gerenciar perfil, segurança, consumo e relatórios pessoais. <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Perfil e segurança (senha, MFA, chaves MCP, tokens)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Consumo de recursos, quotas e créditos</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Agente mentor pessoal</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Relatórios pessoais</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Histórico de mensagens cross-agente</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Life Memory / Integral Memory</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Cursos (Eduzz)</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>Sistemas conectados</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>profile</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>profile</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">Object Storage (anexos)</span>
+        <span class="chip">Eduzz</span>
+        <span class="chip">Life Memory (afl.events / life-memory.capture) — novo</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>user_quotas</code></span>
+        <span class="chip"><code>user_consumption</code></span>
+        <span class="chip"><code>inbox_messages</code></span>
+        <span class="chip"><code>reports</code></span>
+        <span class="chip"><code>life_memory</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> Cursos (Eduzz) e sistemas conectados fora da versão atual.</p>
+      
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <div class="ficha" id="mod-admin">
+    <h3 class="fname">🛠️ Administração <span class="pill b-ativo">Disponível</span></h3>
+    <div class="valor"><b>O que entrega:</b> Gerir usuários, modelos, finanças, canais e governança da plataforma. <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Gestão de usuários, quotas e onboarding</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Gestão de LLMs e API keys</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Finanças (MRR/ARR, churn, NPS)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Integrações e canais</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Configuração do sistema, function calls, hierarquia</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Governança: políticas, compliance, audit logs</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>MCP global e client keys</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Curadoria da loja</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>admin</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>admin</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">AWS Bedrock</span>
+        <span class="chip">OpenAI</span>
+        <span class="chip">ElevenLabs</span>
+        <span class="chip">Twilio</span>
+        <span class="chip">HeyGen</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>users</code></span>
+        <span class="chip"><code>subscriptions</code></span>
+        <span class="chip"><code>quotas</code></span>
+        <span class="chip"><code>llm_configs</code></span>
+        <span class="chip"><code>api_keys</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> Curadoria da loja (flag) fora da versão atual.</p>
+      
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <div class="ficha" id="mod-sistema">
+    <h3 class="fname">🔌 Sistema &amp; acesso <span class="pill b-ativo">Disponível</span></h3>
+    <div class="valor"><b>O que entrega:</b> Integração programática e utilidades transversais. <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Tokens de API e MCP API Keys</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Portal público e callbacks OAuth</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Modo kiosk / Direct Access</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>Video call</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>system</code></span>
+        <span class="chip"><code>public-routes</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>system</code></span>
+        <span class="chip"><code>public-routes</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">MCP</span>
+        <span class="chip">OAuth</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>api_tokens</code></span>
+        <span class="chip"><code>mcp_keys</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> Modo kiosk e video call fora da versão atual.</p>
+      
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <div class="ficha" id="mod-skills">
+    <h3 class="fname">🧩 Skills <span class="pill b-ativo">Disponível</span> <span class="pill b-novo">novo</span></h3>
+    <div class="valor"><b>O que entrega:</b> Habilidades modulares e reutilizáveis atribuíveis a cada agente sem deploy, complementando as tools nativas — ampliam o que o agente sabe fazer (integrações, prompts curados, ações compostas). <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Tipos de skill: prompt, tool, composite</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Execução: webhook (SSRF guard) e native</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Visibilidade: personal, organizational, platform</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Opt-in por agente (pessoal e organizacional)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Skills de plataforma curadas pelo admin</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Seleção centralizada (chat, automação, grupos, stream)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Catálogo de skills nativas (114) importável no admin</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Skill Marketplace (comprar/listar skills)</td><td><span class="pill b-ativo">Disponível</span></td></tr>
+        <tr><td>Execução por script em sandbox</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>Marketplace público de skills</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>skills</code></span>
+        <span class="chip"><code>/api/skills</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>skills</code></span>
+        <span class="chip"><code>/api/skills</code></span>
+        <span class="chip"><code>/api/admin/skills</code></span>
+        <span class="chip"><code>/api/agents/:agentId/skills</code></span>
+        <span class="chip"><code>/skill-marketplace</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">114 skills nativas + 3 curadas (catálogo em docs/skills/)</span>
+        <span class="chip">Webhook (HTTPS com guarda SSRF)</span>
+        <span class="chip">Executores nativos (delega a tool já registrada)</span>
+        <span class="chip">@afl/shared-encryption (config cifrada em repouso)</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>skills</code></span>
+        <span class="chip"><code>agent_skills</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> Marketplace público de skills é v2. Execução por script em sandbox ainda não liberada (v1 suporta webhook e native).</p>
+      <p style="margin:4px 0"><b>Detalhado em:</b> <code>docs/skills/FLUXOS-SKILLS-E-TOOLS.md (repositório atual)</code></p>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <div class="ficha" id="mod-organizacoes">
+    <h3 class="fname">🏢 Organizações (B2B) + Animus <span class="pill b-parcial">Parcial</span></h3>
+    <div class="valor"><b>O que entrega:</b> Workspace corporativo multi-tenant — agentes corporativos, RBAC, governança e integração com HR externo (Animus). <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Módulo de Organizações (multi-tenant, RBAC owner/admin/member)</td><td><span class="pill b-parcial">Parcial</span></td></tr>
+        <tr><td>Integração Animus (HR externo)</td><td><span class="pill b-parcial">Parcial</span></td></tr>
+        <tr><td>Chat corporativo / governança organizacional</td><td><span class="pill b-parcial">Parcial</span></td></tr>
+        <tr><td>Organograma visual (Canvas) + grupos/containers</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>organizations</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>organizations</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">Animus (HR externo)</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip"><code>organizations</code></span>
+        <span class="chip"><code>organization_users</code></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> Organograma visual (Canvas) e grupos/containers ainda fora da versão atual. Liberação parcial em validação.</p>
+      <p style="margin:4px 0"><b>Detalhado em:</b> <code>docs/organizations/ (overview, architecture, rbac-permissions, animus-integration)</code></p>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <div class="ficha" id="mod-canais">
+    <h3 class="fname">📡 Canais <span class="pill b-parcial">Parcial</span></h3>
+    <div class="valor"><b>O que entrega:</b> Pontos de contato além da web para conversar com os agentes. <span class="badge-draft">curado</span></div>
+
+    <div class="field">
+      <div class="lbl">① Funcionalidades <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código + curado</span></div>
+      <table>
+        <tr><th>Funcionalidade</th><th>Status</th></tr>
+        <tr><td>Slack / Telegram / Alexa como canais</td><td><span class="pill b-parcial">Parcial</span></td></tr>
+        <tr><td>WhatsApp Business (Twilio)</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>WhatsApp Pessoal (Evolution/Baileys)</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+        <tr><td>App mobile (Capacitor)</td><td><span class="pill b-fora">Fora da versão</span></td></tr>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="lbl">② Screenshots <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· capturado do ambiente</span></div>
+      <div class="chips">
+        <span class="chip"><code>channels</code></span>
+      </div>
+      <p class="lead" style="margin:4px 0 0">Capturadas a cada run via Playwright. <i>(Placeholders — imagens entram no run.)</i></p>
+    </div>
+
+    <details>
+      <summary>③ Telas / rotas · derivado do código</summary>
+      <div class="inner chips">
+        <span class="chip"><code>channels</code></span>
+      </div>
+    </details>
+
+    <div class="field">
+      <div class="lbl">④ Integrações &amp; dependências <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        <span class="chip">Slack</span>
+        <span class="chip">Telegram</span>
+        <span class="chip">Alexa</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑤ Entidades de dados <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <div class="chips">
+        
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑥ Dono &amp; gaps / roadmap <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· curado</span></div>
+      <p style="margin:4px 0"><b>Dono:</b> Ale Rezende</p>
+      <p style="margin:4px 0"><b>Gap conhecido:</b> WhatsApp (Business/Pessoal) e app mobile (Capacitor) fora da versão atual.</p>
+      
+    </div>
+
+    <div class="field">
+      <div class="lbl">⑦ Última verificação <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· código</span></div>
+      <p style="margin:4px 0">2026-06-16 · commit <code>848e99bd</code></p>
+    </div>
+  </div>
+
+  <footer>
+    AFL — Documentação de Produto · v2 (rascunho HTML) · gerado 2026-06-18 · base commit <code>848e99bd</code><br>
+    Estrutura conforme Espec de Conteúdo v1.1. Destino: árvore de páginas no Notion após aprovação do PM.
+  </footer>
+</main>
+</div>
+</body>
+</html>
